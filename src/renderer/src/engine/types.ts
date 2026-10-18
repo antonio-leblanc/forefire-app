@@ -51,10 +51,23 @@ export interface Timeline {
   version: string
 }
 
-export type ToWorker = { type: 'init'; engineBase: string } | { type: 'run'; id: number; config: RunConfig }
+/** Pedido de velocidades pro Lab (SPEC §6.2). Cada consulta é o argumento do
+ *  `computeSpeed[...]`: `slope;normalWind;<as 22 colunas da linha, sem Index>`,
+ *  com o declive em tangente e o vento em m/s. */
+export interface SpeedRequest {
+  fuelsTable: string
+  queries: string[]
+}
+
+export type ToWorker =
+  | { type: 'init'; engineBase: string }
+  | { type: 'run'; id: number; config: RunConfig }
+  | { type: 'speeds'; id: number; request: SpeedRequest }
 
 export type FromWorker =
   | { type: 'ready' }
   | { type: 'progress'; id: number; done: number; total: number }
   | { type: 'timeline'; id: number; timeline: Timeline }
+  /** Velocidade do modelo em m/s, na ordem das consultas. */
+  | { type: 'speeds'; id: number; speeds: Float64Array }
   | { type: 'failed'; id: number; message: string }

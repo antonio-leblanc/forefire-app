@@ -1,12 +1,13 @@
 import EngineWorker from './worker?worker'
-import type { FromWorker, RunConfig, Timeline, ToWorker } from './types'
+import type { FromWorker, RunConfig, SpeedRequest, Timeline, ToWorker } from './types'
 
 /** Fala com o worker do motor por promises. Um worker só; cada run cria seu
- *  próprio Module WASM lá dentro. */
+ *  próprio Module WASM lá dentro, e o Lab usa um Module fixo. */
 export class Engine {
   private worker = new EngineWorker()
   private nextId = 1
-  private pending = new Map<number, { resolve: (t: Timeline) => void; reject: (e: Error) => void }>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pending = new Map<number, { resolve: (v: any) => void; reject: (e: Error) => void }>()
   readonly ready: Promise<void>
   onProgress: (done: number, total: number) => void = () => {}
 
@@ -19,6 +20,7 @@ export class Engine {
         if (!p) return
         this.pending.delete(data.id)
         if (data.type === 'timeline') p.resolve(data.timeline)
+        else if (data.type === 'speeds') p.resolve(data.speeds)
         else p.reject(new Error(data.message))
       }
     })
@@ -26,12 +28,20 @@ export class Engine {
     this.send({ type: 'init', engineBase: new URL('engine/', document.baseURI).href })
   }
 
-  async run(config: RunConfig): Promise<Timeline> {
+  run(config: RunConfig): Promise<Timeline> {
+    return this.request((id) => ({ type: 'run', id, config }))
+  }
+
+  speeds(request: SpeedRequest): Promise<Float64Array> {
+    return this.request((id) => ({ type: 'speeds', id, request }))
+  }
+
+  private async request<T>(msg: (id: number) => ToWorker): Promise<T> {
     await this.ready
     const id = this.nextId++
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject })
-      this.send({ type: 'run', id, config })
+      this.send(msg(id))
     })
   }
 

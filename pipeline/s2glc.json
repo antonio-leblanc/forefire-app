@@ -1,0 +1,15 @@
+{
+  "62": { "nome": "artificial surfaces", "rgb": [210, 0, 0] },
+  "73": { "nome": "cultivated areas", "rgb": [253, 211, 39] },
+  "75": { "nome": "vineyards", "rgb": [176, 91, 16] },
+  "82": { "nome": "broadleaf tree cover", "rgb": [35, 152, 0] },
+  "83": { "nome": "coniferous tree cover", "rgb": [8, 98, 0] },
+  "102": { "nome": "herbaceous vegetation", "rgb": [249, 150, 39] },
+  "103": { "nome": "moors and heathland", "rgb": [141, 139, 0] },
+  "104": { "nome": "sclerophyllous vegetation", "rgb": [95, 53, 6] },
+  "105": { "nome": "marshes", "rgb": [149, 107, 196] },
+  "106": { "nome": "peatbogs", "rgb": [77, 37, 106] },
+  "121": { "nome": "natural material surfaces", "rgb": [154, 154, 154] },
+  "123": { "nome": "permanent snow", "rgb": [106, 255, 255] },
+  "162": { "nome": "water bodies", "rgb": [20, 69, 249] }
+}

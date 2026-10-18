@@ -40,21 +40,11 @@ WORLDCOVER_PARA_FUEL = {
 }
 SEM_COMBUSTIVEL = 0
 
-# Nome e cor de cada classe S2GLC, da paleta do próprio ForeFire (tools/makeColormapH.py).
+# Nome e cor de cada classe S2GLC, da paleta do próprio ForeFire
+# (tools/makeColormapH.py). O Lab do app lê o mesmo arquivo.
 S2GLC = {
-    62: ("artificial surfaces", (210, 0, 0)),
-    73: ("cultivated areas", (253, 211, 39)),
-    75: ("vineyards", (176, 91, 16)),
-    82: ("broadleaf tree cover", (35, 152, 0)),
-    83: ("coniferous tree cover", (8, 98, 0)),
-    102: ("herbaceous vegetation", (249, 150, 39)),
-    103: ("moors and heathland", (141, 139, 0)),
-    104: ("sclerophyllous vegetation", (95, 53, 6)),
-    105: ("marshes", (149, 107, 196)),
-    106: ("peatbogs", (77, 37, 106)),
-    121: ("natural material surfaces", (154, 154, 154)),
-    123: ("permanent snow", (106, 255, 255)),
-    162: ("water bodies", (20, 69, 249)),
+    int(k): (v["nome"], tuple(v["rgb"]))
+    for k, v in json.loads((Path(__file__).parent / "s2glc.json").read_text(encoding="utf-8")).items()
 }
 
 

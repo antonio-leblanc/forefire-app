@@ -9,7 +9,16 @@
  * A timeline inteira é calculada de uma vez e devolvida junta: a UI faz scrub
  * nos frames sem esperar o solver.
  */
-import type { Frame, FromWorker, Outcome, RunConfig, Timeline, ToWorker } from './types'
+import { MODEL, SOLVER } from './solver'
+import type {
+  Frame,
+  FromWorker,
+  Outcome,
+  RunConfig,
+  SpeedRequest,
+  Timeline,
+  ToWorker
+} from './types'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type ForeFireModule = any
@@ -17,21 +26,6 @@ type Factory = (opts?: Record<string, unknown>) => Promise<ForeFireModule>
 
 let factory: Factory | null = null
 let compiled: WebAssembly.Module | null = null
-
-// Rothermel com os parâmetros do tests/runff/params.ff, como na demo.
-const SOLVER = {
-  spatialIncrement: 3,
-  minimalPropagativeFrontDepth: 20,
-  perimeterResolution: 10,
-  initialFrontDepth: 0.1,
-  relax: 0.5,
-  smoothing: 0,
-  minSpeed: 0.009,
-  bmapLayer: 1,
-  windReductionFactor: 0.4,
-  propagationSpeedAdjustmentFactor: 0.6
-}
-const MODEL = 'Rothermel'
 
 const post = (msg: FromWorker, transfer: Transferable[] = []): void =>
   (self as unknown as Worker).postMessage(msg, transfer)
@@ -44,7 +38,10 @@ async function init(engineBase: string): Promise<void> {
 
 async function freshModule(): Promise<ForeFireModule> {
   return factory!({
-    instantiateWasm(imports: WebAssembly.Imports, receive: (i: WebAssembly.Instance, m: WebAssembly.Module) => void) {
+    instantiateWasm(
+      imports: WebAssembly.Imports,
+      receive: (i: WebAssembly.Instance, m: WebAssembly.Module) => void
+    ) {
       WebAssembly.instantiate(compiled!, imports).then((instance) => receive(instance, compiled!))
       return {}
     }
@@ -72,7 +69,8 @@ function build(Module: ForeFireModule, cfg: RunConfig): any {
 
   // Altitude antes do modelo de propagação: é registrar "altitude" que faz o
   // DataBroker derivar o declive. Depois disso o declive fica zero pra sempre.
-  if (land.altitude) ff.addScalarLayer('data', 'altitude', 0, 0, 0, S, S, 0, nx, ny, 1, 1, land.altitude)
+  if (land.altitude)
+    ff.addScalarLayer('data', 'altitude', 0, 0, 0, S, S, 0, nx, ny, 1, 1, land.altitude)
 
   const ok = [
     ff.addLayer('propagation', model, 'propagationModel'),
@@ -120,7 +118,8 @@ function burntArea(fronts: Float32Array[]): number {
 function touchesEdge(fronts: Float32Array[], side: number, margin: number): boolean {
   for (const f of fronts)
     for (let i = 0; i < f.length; i += 2)
-      if (f[i] < margin || f[i] > side - margin || f[i + 1] < margin || f[i + 1] > side - margin) return true
+      if (f[i] < margin || f[i] > side - margin || f[i + 1] < margin || f[i + 1] > side - margin)
+        return true
   return false
 }
 
@@ -158,7 +157,10 @@ async function simulate(id: number, cfg: RunConfig): Promise<Timeline> {
     if (frames.at(-1)!.fronts.length === 0) {
       frames.pop()
       const last = frames.at(-1)
-      outcome = last && touchesEdge(last.fronts, side, 3 * SOLVER.perimeterResolution) ? 'left-domain' : 'burnt-out'
+      outcome =
+        last && touchesEdge(last.fronts, side, 3 * SOLVER.perimeterResolution)
+          ? 'left-domain'
+          : 'burnt-out'
       break
     }
     if (frames.length > WINDOW) {
@@ -178,10 +180,42 @@ async function simulate(id: number, cfg: RunConfig): Promise<Timeline> {
   return { frames, outcome, wallMs: performance.now() - started, version: Module.version() }
 }
 
+// Module do Lab: sem fogo no domínio, o estado global não vaza entre pedidos,
+// então um Module só serve pra sempre. Refeito só quando a fuelsTable muda.
+// Guardado como promise: pedidos que chegam juntos esperam o mesmo Module.
+let lab: { table: string; ff: Promise<any> } | null = null
+
+async function labEngine(table: string): Promise<any> {
+  const Module = await freshModule()
+  const ff = new Module.ForeFire()
+  ff.setString('fuelsTable', table)
+  for (const [k, v] of Object.entries(SOLVER)) ff.setDouble(k, v)
+  ff.setString('propagationModel', MODEL)
+  ff.execute('FireDomain[sw=(0,0,0);ne=(100,100,0);t=0]')
+  if (!ff.addLayer('propagation', MODEL, 'propagationModel'))
+    throw new Error('propagation model failed to register')
+  return ff
+}
+
+async function speeds(req: SpeedRequest): Promise<Float64Array> {
+  if (lab?.table !== req.fuelsTable) lab = { table: req.fuelsTable, ff: labEngine(req.fuelsTable) }
+  const ff = await lab.ff
+  return Float64Array.from(req.queries, (q) => parseFloat(ff.execute(`computeSpeed[${q}]`)))
+}
+
 self.onmessage = async ({ data: msg }: MessageEvent<ToWorker>) => {
   if (msg.type === 'init') {
     await init(msg.engineBase)
     post({ type: 'ready' })
+    return
+  }
+  if (msg.type === 'speeds') {
+    try {
+      const result = await speeds(msg.request)
+      post({ type: 'speeds', id: msg.id, speeds: result }, [result.buffer])
+    } catch (err) {
+      post({ type: 'failed', id: msg.id, message: String((err as Error)?.message ?? err) })
+    }
     return
   }
   try {

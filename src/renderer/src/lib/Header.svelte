@@ -1,3 +1,7 @@
+<script lang="ts" module>
+  export type Mode = 'simulation' | 'lab'
+</script>
+
 <script lang="ts">
   import logo from '../assets/logo.png'
 
@@ -9,9 +13,15 @@
     /** Versão do motor, conhecida depois do primeiro run. */
     version: string | null
     engineReady: boolean
+    mode: Mode
     onopen: () => void
   }
-  let { name, side, version, engineReady, onopen }: Props = $props()
+  let { name, side, version, engineReady, mode = $bindable(), onopen }: Props = $props()
+
+  const MODES: [Mode, string][] = [
+    ['simulation', 'Simulation'],
+    ['lab', 'Lab']
+  ]
 
   const engineLabel = $derived(
     version
@@ -57,6 +67,12 @@
       <path d="M6 9l6 6 6-6" />
     </svg>
   </button>
+  <div class="sep"></div>
+  <nav>
+    {#each MODES as [key, label] (key)}
+      <button class:active={mode === key} onclick={() => (mode = key)}>{label}</button>
+    {/each}
+  </nav>
   <div class="grow"></div>
   <span class="engine">{engineLabel}</span>
 </header>
@@ -107,6 +123,27 @@
       color 0.15s;
   }
   .landscape:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  nav {
+    display: flex;
+    gap: 2px;
+  }
+  nav button {
+    height: 28px;
+    padding: 0 10px;
+    background: none;
+    border: 0;
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  nav button:hover {
+    color: var(--text);
+  }
+  nav button.active {
     background: var(--surface-2);
     color: var(--text);
   }

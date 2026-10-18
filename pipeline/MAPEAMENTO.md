@@ -32,6 +32,6 @@ Os parâmetros foram calibrados pra vegetação mediterrânea (Córsega). Fora d
 
 ## Escolhas em aberto
 
-- **Árvore → folhosa ou conífera.** A conífera (83) tem a mesma profundidade e umidade do combustível morto menor (`Md` 0,05 contra 0,10): queima mais rápido. Boreal e pinhal ficam subestimados com 82.
+- **Árvore → folhosa ou conífera.** A conífera (83) tem a mesma profundidade, mas combustível morto mais seco (`Md` 0,05 contra 0,10), mais fino (`sd` 6099 contra 4287 1/m) e em menor carga (`Sigmad` 0,76 contra 1,38 kg/m²): queima mais rápido. Boreal e pinhal ficam subestimados com 82.
 - **Área úmida como barreira.** Segue a tabela do ForeFire, mas campo alagável queima na seca (Pantanal, por exemplo).
 - **Campo com 0,60 m**, a mesma profundidade do arbusto, mais alta que a de muito campo natural.

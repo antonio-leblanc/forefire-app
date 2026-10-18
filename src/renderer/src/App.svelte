@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import Header from './lib/Header.svelte'
+  import Header, { type Mode } from './lib/Header.svelte'
+  import Lab from './lab/Lab.svelte'
   import Map from './lib/Map.svelte'
   import RunStats from './lib/RunStats.svelte'
   import Sidebar from './lib/Sidebar.svelte'
@@ -30,6 +31,7 @@
   let engineReady = $state(false)
   let running = $state(false)
   let progress = $state('')
+  let mode = $state<Mode>('simulation')
 
   function load(raw: RawPack | null): void {
     if (!raw) return
@@ -111,9 +113,14 @@
     side={pack?.meta.lado ?? 0}
     version={timeline?.version ?? null}
     {engineReady}
+    bind:mode
     onopen={async () => load(await window.api.openLandscape())}
   />
-  <div class="body">
+  {#if mode === 'lab'}
+    <Lab {engine} present={Object.keys(pack?.meta.legenda ?? {}).map(Number)} />
+  {/if}
+  <!-- A simulação fica montada fora da aba: o mapa e o último run continuam lá na volta. -->
+  <div class="body" hidden={mode !== 'simulation'}>
     <Sidebar
       meta={pack?.meta ?? null}
       domain={pack?.domain ?? null}
@@ -168,6 +175,9 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+  }
+  .body[hidden] {
+    display: none;
   }
   .body {
     flex: 1;

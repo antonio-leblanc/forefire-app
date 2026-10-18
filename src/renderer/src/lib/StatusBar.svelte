@@ -5,13 +5,17 @@
     hasPack: boolean
   }
   let { sources, hasPack }: Props = $props()
+
+  const MAPPING_URL =
+    'https://github.com/antonio-leblanc/forefire-app/blob/master/pipeline/MAPEAMENTO.md'
 </script>
 
 <footer>
   <span>{sources.join(' · ')}</span>
   <span class="grow"></span>
   {#if hasPack}
-    <span>Fuel approximated from land cover</span>
+    <!-- target=_blank: o main abre no navegador (setWindowOpenHandler) -->
+    <a href={MAPPING_URL} target="_blank" rel="noreferrer">Fuel approximated from land cover</a>
   {/if}
 </footer>
 
@@ -28,5 +32,12 @@
   }
   .grow {
     flex: 1;
+  }
+  a {
+    color: inherit;
+    text-decoration: underline dotted;
+  }
+  a:hover {
+    color: var(--text);
   }
 </style>

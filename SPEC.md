@@ -2,7 +2,7 @@
 
 **Spec-driven development.** Toda decisão arquitetural, trade-off e milestone mora aqui. O código segue o spec, não o contrário. O passo a passo do milestone atual fica em [`PLAN.md`](./PLAN.md).
 
-Status: M1 concluído, M2 em andamento. Última atualização: 2026-10-18.
+Status: M1 concluído; M2 com uma pendência (fechar o mapeamento, que sai do Lab); M3 em andamento, com o Model Playground de pé. Última atualização: 2026-10-18.
 
 ---
 
@@ -41,9 +41,13 @@ Projeto pessoal pra estudar o ForeFire: entender na prática como a propagação
 - Offline, quando chegar a hora: **PMTiles** via `addProtocol` ([exemplo](https://www.maplibre.org/maplibre-gl-js/docs/examples/pmtiles-source-and-protocol/)). O Maplibre não lê MBTiles nativamente.
 - Basemap sem imagem de satélite comercial (a Esri World Imagery tem termos restritivos).
 
-### 2.4 Gráficos: adiado pro M3
+### 2.4 Gráficos: Observable Plot
 
-Curvas de ROS do Modo Lab. D3 ou Observable Plot, decidido quando o Lab começar.
+**Decisão:** [Observable Plot](https://observablehq.com/plot/) pras curvas do Lab.
+
+- Declarativo: uma curva por combustível sai de uma linha de código, sem montar escala e eixo na mão como no D3.
+- Gera SVG, que herda a fonte e as cores do tema.
+- Vai empacotado no app, sem CDN: funciona offline.
 
 ### 2.5 Dados locais: pacotes de paisagem
 

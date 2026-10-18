@@ -1,6 +1,8 @@
 # PLAN — M2: dados reais
 
-Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md) (§5); aqui fica só a execução. Cada passo termina com algo que dá pra ver rodando.
+**Onde está:** M2 feito, menos o passo 4 (fechar o mapeamento), que depende do Lab. M3 com os passos 1 a 3 feitos; o próximo é o 4: usar o Lab pra fechar as escolhas do `MAPEAMENTO.md`.
+
+Passo a passo dos milestones em curso. As decisões ficam no [`SPEC.md`](./SPEC.md) (§5); aqui fica só a execução. Cada passo termina com algo que dá pra ver rodando.
 
 ## 1. Pipeline: primeiro pacote
 - [x] Projeto `uv` em `pipeline/` (`rasterio`, `numpy`)
@@ -35,7 +37,7 @@ Vem antes do resto do M2: hillshade, legenda e aviso de aproximação já nascem
 - [x] `fuels.csv` vira a tabela S2GLC do ForeFire (SPEC §5.3)
 - [x] Cada classe do WorldCover → classe S2GLC, em `pipeline/MAPEAMENTO.md`, com o porquê
 - [x] Versão do mapeamento e legenda (nome, cor da paleta do ForeFire, profundidade) no `meta.json`; o app desenha a partir dela
-- [ ] Estudar as colunas do Rothermel (o que `sd`, `Md`, `Sigmad`, `e` significam) e fechar as escolhas em aberto do `MAPEAMENTO.md`
+- [ ] Estudar as colunas do Rothermel e fechar as escolhas em aberto do `MAPEAMENTO.md`: sai pelo Lab (M3, passo 4)
 - [ ] Conferir no app: Alto Paraíso e Córsega
 
 **Pronto quando:** cada classe tem combustível justificado, e o fogo se comporta como o mapeamento diz que deveria (corre mais rápido no campo do que na floresta, por exemplo).
@@ -43,12 +45,52 @@ Vem antes do resto do M2: hillshade, legenda e aviso de aproximação já nascem
 ## 5. Relevo
 - [x] Pipeline lê o Copernicus DEM (bilinear) e grava o `altitude.bin` real
 - [x] Toggle **Relevo** no app: ligado usa o `altitude.bin`, desligado manda zeros
-- [ ] Hillshade do relevo real no mapa
+- [x] Hillshade do relevo real no mapa
+- [x] Conferir com e sem relevo: na Córsega, ignição num declive de ~59°, sem vento, 1 h: 3,8 ha plano contra 12,5 ha com relevo, e o centro da área queimada sobe ~100 m encosta acima. Em Alto Paraíso (chapada, ~14°) a diferença é pequena (3,8 contra 4,1 ha)
 
 **Pronto quando:** a mesma ignição, com e sem relevo, dá frentes diferentes num declive visível.
 
 ## 6. Atribuição e aviso
 - [x] Atribuição do ESA WorldCover (CC-BY 4.0) e do Copernicus DEM na UI (rodapé do mapa, lida do `meta.json`)
-- [ ] Aviso de que o combustível é aproximação a partir de cobertura do solo, com link pro `MAPEAMENTO.md`
+- [x] Aviso de que o combustível é aproximação a partir de cobertura do solo, com link pro `MAPEAMENTO.md`
 
 **Pronto quando:** o app mostra de onde vem cada dado e o que é aproximação.
+
+---
+
+# PLAN — M3: Lab
+
+Começa pelo Model Playground (SPEC §6.2). O primeiro uso dele é fechar as escolhas em aberto do `MAPEAMENTO.md` (M2, passo 4): ver na curva o que cada coluna faz com a velocidade, em vez de decidir no olho.
+
+**O que o motor oferece**, conferido em `Command.cpp` e `Rothermel.cpp`:
+- `computeSpeed[slope;normalWind;<22 colunas>]` devolve a velocidade do modelo de propagação ativo, em m/s, sem fogo nenhum no domínio.
+- `slope` é a tangente do declive; `normalWind` é o vento normal à frente, em m/s. As 22 colunas são a linha da `fuelsTable` sem o `Index`, na ordem do SPEC §4.
+- A curva já inclui o `windReductionFactor` (0,4) e o teto de vento de Andrews/Cruz/Rothermel (2013). O `propagationSpeedAdjustmentFactor` não entra: a frente no mapa anda mais devagar que a curva.
+
+## 1. Gráficos e aba
+- [x] Biblioteca decidida no SPEC §2.4: Observable Plot
+- [x] Abas **Simulation · Lab** no header (SPEC §7.1); o mapa e a simulação ficam montados ao trocar de aba
+
+## 2. Velocidade no worker
+- [x] Mensagem `speeds` no worker: recebe a `fuelsTable` e uma lista de pontos (fuel, declive, vento, `Md`), devolve as velocidades. Um Module só pro Lab, já que não há fogo e o estado global não vaza
+- [ ] Conferir contra o protótipo em Node: Rothermel sem declive, linha 82, vento 5 m/s ≈ 26 m/min
+
+## 3. Model Playground
+- [x] Três curvas: ROS × vento (0–15 m/s), ROS × declive (0–40°), ROS × umidade do morto `Md` (0,02 até a umidade de extinção `me`)
+- [x] Uma linha por combustível que queima (`e` > 0) da tabela S2GLC inteira (`pipeline/fuels.csv`), não só os da paisagem aberta: a Córsega não tem conífera, e sem ela não há como comparar 82 com 83. Os da paisagem aparecem marcados. Nome e cor vêm de `pipeline/s2glc.json`, o mesmo que o pipeline usa
+- [x] As duas variáveis fora do eixo ficam em controles (vento e declive fixos na curva de umidade, e assim por diante)
+- [x] Combustíveis com a mesma linha de parâmetros desenham uma curva só, com os nomes juntos na legenda
+- [x] Tabela no formato do `fuels.csv`: uma linha por `Index`, as 22 colunas na ordem do arquivo. As 7 que o `getSpeed` lê (`e`, `Sigmad`, `Rhod`, `sd`, `Md`, `me`, `DeltaH`) em destaque, com o significado no cabeçalho e num glossário; β/βop como coluna derivada
+
+**Pronto quando:** dá pra apontar na tela por que a conífera (83) corre mais que a folhosa (82), e qual coluna responde por isso.
+
+## 4. Fechar o mapeamento com o Lab
+- [ ] Folhosa ou conífera pra classe 10 do WorldCover
+- [ ] Campo (30): o que a profundidade de 0,60 m faz com a velocidade, e se outra linha da tabela do ForeFire representa melhor o campo baixo
+- [ ] Área úmida (90): a curva de umidade mostra onde a herbácea para de queimar; decidir entre barreira e herbácea, sabendo que a segunda pede um `Md` fora da tabela do ForeFire (SPEC §5.3 diz que a física vem sem alteração)
+- [ ] Cada decisão no `MAPEAMENTO.md` com o porquê e o gráfico que a sustenta; se a tabela mudar, versão `worldcover-s2glc-2`
+
+**Pronto quando:** o `MAPEAMENTO.md` não tem mais escolha em aberto, e o passo 4 do M2 fecha.
+
+## 5. Fuel Studio
+Detalhado quando o Playground estiver de pé: editar as colunas de um combustível e ver a curva mudar junto, com a linha original de referência.
