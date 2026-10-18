@@ -20,13 +20,26 @@
     /** Combustível (data URL), esticado sobre o domínio. */
     fuelImage: string
     showFuel: boolean
+    /** Sombreamento do relevo (data URL), mesmo enquadramento do combustível. */
+    hillshadeImage: string
+    showHillshade: boolean
     ignition: [number, number]
     frames: Frame[]
     /** Frame mostrado como frente atual. */
     current: number
     onignite: (xy: [number, number]) => void
   }
-  let { domain, fuelImage, showFuel, ignition, frames, current, onignite }: Props = $props()
+  let {
+    domain,
+    fuelImage,
+    showFuel,
+    hillshadeImage,
+    showHillshade,
+    ignition,
+    frames,
+    current,
+    onignite
+  }: Props = $props()
 
   let container: HTMLDivElement
   let map: maplibregl.Map | null = $state(null)
@@ -63,17 +76,22 @@
         m.addSource(id, { type: 'geojson', data: empty })
 
       const S = domain.side
-      m.addSource('fuel', {
-        type: 'image',
-        url: fuelImage,
-        // Cantos na ordem do Maplibre: noroeste, nordeste, sudeste, sudoeste.
-        coordinates: [
-          toLngLat(domain, 0, S),
-          toLngLat(domain, S, S),
-          toLngLat(domain, S, 0),
-          toLngLat(domain, 0, 0)
-        ]
+      // Cantos na ordem do Maplibre: noroeste, nordeste, sudeste, sudoeste.
+      const corners: [[number, number], [number, number], [number, number], [number, number]] = [
+        toLngLat(domain, 0, S),
+        toLngLat(domain, S, S),
+        toLngLat(domain, S, 0),
+        toLngLat(domain, 0, 0)
+      ]
+      m.addSource('hillshade', { type: 'image', url: hillshadeImage, coordinates: corners })
+      m.addLayer({
+        id: 'hillshade',
+        type: 'raster',
+        source: 'hillshade',
+        layout: { visibility: showHillshade ? 'visible' : 'none' },
+        paint: { 'raster-fade-duration': 0 }
       })
+      m.addSource('fuel', { type: 'image', url: fuelImage, coordinates: corners })
       m.addLayer({
         id: 'fuel',
         type: 'raster',
@@ -140,6 +158,10 @@
 
   $effect(() => {
     map?.setLayoutProperty('fuel', 'visibility', showFuel ? 'visible' : 'none')
+  })
+
+  $effect(() => {
+    map?.setLayoutProperty('hillshade', 'visibility', showHillshade ? 'visible' : 'none')
   })
 
   $effect(() => {

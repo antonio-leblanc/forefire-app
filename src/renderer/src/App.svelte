@@ -10,12 +10,13 @@
   import type { Landscape, Timeline } from './engine/types'
   import { inside } from './landscape/geo'
   import { type Pack, fromRaw } from './landscape/pack'
-  import { renderFuel } from './landscape/render'
+  import { renderFuel, renderHillshade } from './landscape/render'
 
   const engine = new Engine()
   // $state.raw: arrays grandes não precisam de reatividade profunda.
   let pack = $state.raw<Pack | null>(null)
   let fuelImage = $state('')
+  let hillshadeImage = $state('')
   let error = $state('')
   let ignition = $state<[number, number]>([0, 0])
   let timeline = $state<Timeline | null>(null)
@@ -35,6 +36,7 @@
     try {
       const p = fromRaw(raw)
       fuelImage = renderFuel(p.landscape)
+      hillshadeImage = renderHillshade(p.landscape)
       ignition = [p.meta.lado / 2, p.meta.lado / 2]
       timeline = null
       error = ''
@@ -135,6 +137,8 @@
               domain={pack.domain}
               {fuelImage}
               {showFuel}
+              {hillshadeImage}
+              showHillshade={relief}
               {ignition}
               frames={timeline?.frames ?? []}
               {current}
