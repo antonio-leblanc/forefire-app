@@ -22,7 +22,7 @@ LADO = 5000  # metros
 CELULA = 20  # metros
 
 # Mapeamento provisório (PLAN passo 1): só separa o que queima do que não queima,
-# com duas linhas do fuels.csv. O mapeamento de verdade é o passo 3.
+# com duas linhas do fuels.csv. O mapeamento de verdade é o passo 4.
 MAPEAMENTO_VERSAO = "provisorio-0"
 WORLDCOVER_PARA_FUEL = {
     10: 5,  # árvores

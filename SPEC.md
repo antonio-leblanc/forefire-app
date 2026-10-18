@@ -184,7 +184,7 @@ Cara de software desktop, não de mapa com popup. O mapa ocupa quase tudo; nada 
 ### 7.2 Visual
 
 - Moldura escura (header, sidebar, timeline) e mapa claro: o mapa é o assunto, a moldura não compete com ele.
-- Destaque no laranja da chama do logo; fundo marrom quase preto, não cinza neutro.
+- Laranja da chama do logo só no fogo (frente, ignição, vento) e no ícone das ações; moldura contida, sem cor nos títulos nem botões cheios. Fundo marrom quase preto, não cinza neutro.
 - IBM Plex Sans no texto e IBM Plex Mono nos números, empacotadas no app (o app precisa rodar offline, §9 M5).
 - Ícone do executável e da janela: o logo do ForeFire num quadrado escuro arredondado. Título da janela: `ForeFire — <paisagem>`.
 

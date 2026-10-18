@@ -20,7 +20,7 @@
     flex-shrink: 0;
     display: flex;
     gap: 16px;
-    padding: 5px 16px;
+    padding: 5px 12px;
     background: var(--bg);
     border-top: 1px solid var(--border);
     font-size: 11px;

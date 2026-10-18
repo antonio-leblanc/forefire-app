@@ -37,11 +37,11 @@
     aria-label={playing ? 'Pause' : 'Play'}
   >
     {#if playing}
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <rect x="5" y="4" width="5" height="16" /><rect x="14" y="4" width="5" height="16" />
       </svg>
     {:else}
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
         ><path d="M6 4l14 8-14 8z" /></svg
       >
     {/if}
@@ -66,32 +66,37 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 10px 16px;
-    background: var(--surface);
+    gap: 12px;
+    height: 40px;
+    padding: 0 12px;
+    background: var(--bg);
     border-top: 1px solid var(--border);
   }
   .play {
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
     flex-shrink: 0;
     display: grid;
     place-items: center;
     border: 0;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--on-accent);
+    border-radius: var(--radius);
+    background: none;
+    color: var(--accent-text);
     cursor: pointer;
+    transition: background 0.15s;
+  }
+  .play:hover:not(:disabled) {
+    background: var(--surface-2);
   }
   .play:disabled {
-    background: var(--surface-2);
     color: var(--muted);
+    opacity: 0.5;
     cursor: default;
   }
   .time {
     font-family: var(--mono);
-    font-size: 15px;
-    min-width: 130px;
+    font-size: 12px;
+    min-width: 110px;
   }
   input {
     flex: 1;
@@ -101,6 +106,6 @@
     color: var(--muted);
   }
   .hint {
-    font-size: 13px;
+    font-size: 11px;
   }
 </style>

@@ -124,12 +124,12 @@
     <h2>Ignition</h2>
     <div class="ignition">
       <svg
-        width="18"
-        height="18"
+        width="14"
+        height="14"
         viewBox="0 0 24 24"
         fill="none"
         stroke="var(--accent)"
-        stroke-width="2"
+        stroke-width="1.8"
         aria-hidden="true"
       >
         <circle cx="12" cy="12" r="4" />
@@ -146,8 +146,8 @@
       <svg
         class="rose"
         bind:this={rose}
-        width="88"
-        height="88"
+        width="76"
+        height="76"
         viewBox="0 0 100 100"
         role="slider"
         tabindex="0"
@@ -160,8 +160,7 @@
         {onpointermove}
         {onkeydown}
       >
-        <circle cx="50" cy="50" r="44" fill="var(--surface-2)" stroke="#3a342e" />
-        <circle cx="50" cy="50" r="28" fill="none" stroke="var(--border)" />
+        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--border)" />
         <text x="50" y="14">N</text>
         <text x="90" y="53">E</text>
         <text x="50" y="94">S</text>
@@ -172,22 +171,15 @@
           x2={arrow.tip[0]}
           y2={arrow.tip[1]}
           stroke="var(--accent)"
-          stroke-width="3"
+          stroke-width="2"
           stroke-linecap="round"
         />
         <path
-          d="M0 0 L-6 10 L6 10 Z"
+          d="M0 0 L-5 9 L5 9 Z"
           fill="var(--accent)"
           transform={`translate(${arrow.tip[0]} ${arrow.tip[1]}) rotate(${arrow.deg})`}
         />
-        <circle
-          cx={arrow.tail[0]}
-          cy={arrow.tail[1]}
-          r="5"
-          fill="var(--text)"
-          stroke="var(--accent)"
-          stroke-width="2"
-        />
+        <circle cx={arrow.tail[0]} cy={arrow.tail[1]} r="4" fill="var(--text)" />
       </svg>
       <div class="wind-read">
         <span class="mono big">{windSpeed.toLocaleString('en-US')} <small>m/s</small></span>
@@ -207,7 +199,7 @@
       {#if running}
         Simulating… {progress}
       {:else}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--accent)" aria-hidden="true"
           ><path d="M6 4l14 8-14 8z" /></svg
         >
         Run simulation
@@ -219,14 +211,14 @@
 
 <style>
   aside {
-    width: 300px;
+    width: 288px;
     flex-shrink: 0;
     overflow-y: auto;
-    background: var(--surface);
+    background: var(--bg);
     border-right: 1px solid var(--border);
   }
   section {
-    padding: 12px 16px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
@@ -236,25 +228,21 @@
     border-bottom: 0;
   }
   h2 {
-    margin: 0;
+    margin: 0 0 2px;
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent-text);
+    font-weight: 500;
+    color: var(--muted);
   }
   h2 .note {
     font-size: 11px;
-    font-weight: 400;
-    letter-spacing: normal;
-    text-transform: none;
+    opacity: 0.7;
   }
   dl {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 6px 12px;
     margin: 0;
-    font-size: 13px;
+    font-size: 12px;
   }
   dt {
     color: var(--muted);
@@ -272,16 +260,18 @@
   .check {
     flex-direction: row;
     align-items: center;
-    gap: 10px;
-    min-height: 24px;
-    font-size: 14px;
-    color: var(--text);
+    justify-content: space-between;
+    min-height: 22px;
+    font-size: 12px;
+    color: var(--text-2);
     cursor: pointer;
   }
   .check input {
-    width: 16px;
-    height: 16px;
+    order: 1;
+    width: 13px;
+    height: 13px;
     margin: 0;
+    cursor: pointer;
   }
   input[type='range'] {
     width: 100%;
@@ -292,12 +282,12 @@
   }
   .note {
     margin: 0;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
   }
   .error {
     margin: 0;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--danger);
   }
   .legend {
@@ -306,30 +296,27 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    font-size: 13px;
+    gap: 3px;
+    font-size: 12px;
     color: var(--text-2);
   }
   .legend span {
     display: inline-block;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     margin-right: 8px;
     border-radius: 2px;
   }
   .ignition {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    background: var(--surface-2);
-    border-radius: var(--radius);
-    font-size: 13px;
+    gap: 8px;
+    font-size: 12px;
   }
   .wind {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
   }
   .wind text {
     fill: var(--muted);
@@ -348,39 +335,43 @@
     outline-offset: 2px;
   }
   .hint {
-    font-size: 11px;
+    opacity: 0.7;
   }
   .wind-read {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
   }
   .big {
-    font-size: 22px;
+    font-size: 16px;
   }
   .big small {
-    font-size: 13px;
+    font-size: 11px;
     color: var(--muted);
   }
   .run {
-    height: 40px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border: 0;
-    border-radius: 8px;
-    background: var(--accent);
-    color: var(--on-accent);
-    font-weight: 600;
-    font-size: 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    color: var(--text);
+    font-weight: 500;
+    font-size: 12px;
     cursor: pointer;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
   }
   .run:hover:not(:disabled) {
-    background: #f07a40;
+    background: #2c2722;
+    border-color: #4a423b;
   }
   .run:disabled {
-    opacity: 0.55;
+    opacity: 0.5;
     cursor: default;
   }
 </style>

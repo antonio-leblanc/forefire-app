@@ -42,11 +42,11 @@
     left: 12px;
     z-index: 1;
     display: flex;
-    gap: 20px;
-    padding: 12px 16px;
-    background: rgba(28, 25, 22, 0.92);
+    gap: 18px;
+    padding: 8px 12px;
+    background: rgba(20, 17, 15, 0.9);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius);
   }
   .stats div {
     display: flex;
@@ -56,15 +56,13 @@
   .label {
     font-size: 11px;
     color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
   }
   .value {
-    font-size: 20px;
+    font-size: 14px;
   }
   .small {
-    font-size: 15px;
-    padding-top: 4px;
+    font-size: 12px;
+    padding-top: 2px;
   }
   .mono {
     font-family: var(--mono);

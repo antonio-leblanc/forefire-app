@@ -30,12 +30,12 @@
   <div class="sep"></div>
   <button class="landscape" onclick={onopen} title="Open another landscape">
     <svg
-      width="16"
-      height="16"
+      width="14"
+      height="14"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="1.8"
+      stroke-width="1.6"
       aria-hidden="true"
     >
       <path d="M3 20l6-12 4 7 3-4 5 9z" />
@@ -63,52 +63,59 @@
 
 <style>
   header {
-    height: 52px;
+    height: 44px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 0 16px;
-    background: var(--surface);
+    gap: 10px;
+    padding: 0 12px;
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
+    user-select: none;
   }
   .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
   }
   .brand img {
-    width: 24px;
-    height: 26px;
+    width: 18px;
+    height: 20px;
     object-fit: contain;
   }
   .sep {
     width: 1px;
-    height: 24px;
+    height: 16px;
     background: var(--border);
   }
   .landscape {
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 12px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
+    gap: 6px;
+    height: 28px;
+    padding: 0 8px;
+    background: none;
+    border: 0;
     border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--text-2);
     cursor: pointer;
+    transition:
+      background 0.15s,
+      color 0.15s;
   }
   .landscape:hover {
-    border-color: #4a423b;
+    background: var(--surface-2);
+    color: var(--text);
   }
   .grow {
     flex: 1;
   }
   .engine {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
   }
 </style>

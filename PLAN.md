@@ -17,7 +17,7 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md) (
 - [x] Renderer monta a `Landscape` do pacote no lugar da sintética
 - [x] Raster de combustível como camada opcional, desligada por padrão
 - [x] Sai a paisagem sintética do M1
-- [ ] Conferir no app: lugar certo, fogo parando na cidade
+- [x] Conferir no app: lugar certo, fogo parando na cidade
 
 **Pronto quando:** a paisagem real aparece no lugar certo e o fogo roda nela, parando nos rios e nas áreas construídas.
 
