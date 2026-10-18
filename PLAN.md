@@ -1,4 +1,4 @@
-# PLAN — M1: motor no app
+# PLAN — M1: motor no app (concluído)
 
 Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md); aqui fica só a execução. Cada passo termina com algo que dá pra ver rodando.
 
@@ -28,9 +28,9 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md); 
 **Pendente pro build de produção:** com `loadFile` o motor viria de `file://`, e o `fetch` do `.wasm` não funciona assim. Resolver com um protocolo próprio (`app://`) no main antes do M5.
 
 ## 4. Paisagem sintética
-- [ ] Gerador: colina gaussiana + manchas de combustível (linhas 0, 4 e 5 do `fuels.csv`)
-- [ ] Posicionada numa lat/lon fixa, convertida pra metros (contrato do SPEC §4)
-- [ ] Desenhada no mapa como raster (combustível) + hillshade simples
+- [x] Gerador: colina gaussiana + manchas de combustível (linhas 0, 4 e 5 do `fuels.csv`): `landscape/synthetic.ts`
+- [x] Posicionada numa lat/lon fixa, convertida pra metros (contrato do SPEC §4)
+- [x] Desenhada no mapa como raster (combustível) + hillshade simples
 
 **Pronto quando:** a paisagem aparece no mapa no lugar certo.
 
@@ -40,10 +40,10 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md); 
 - [x] Frentes convertidas de metros pra lat/lon e desenhadas, coloridas por tempo (isócronas)
 - [x] Área queimada na tela
 
-**Pronto quando:** o fogo sobe a colina mais rápido do que desce.
+**Pronto quando:** o fogo sobe a colina mais rápido do que desce. Conferido: sem vento, 435 m morro acima contra 122 m morro abaixo em 1 h; a estrada de 40 m segura o fogo até com vento de 10 m/s.
 
 ## 6. Timeline
 - [x] Slider sobre os frames já calculados
-- [ ] Play/pause
+- [x] Play/pause
 
 **Pronto quando:** dá pra voltar e avançar o fogo sem rodar o solver de novo.

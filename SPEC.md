@@ -2,7 +2,7 @@
 
 **Spec-driven development.** Toda decisão arquitetural, trade-off e milestone mora aqui. O código segue o spec, não o contrário. O passo a passo do milestone atual fica em [`PLAN.md`](./PLAN.md).
 
-Status: M1 em andamento. Última atualização: 2026-10-18.
+Status: M1 concluído, M2 a seguir. Última atualização: 2026-10-18.
 
 ---
 

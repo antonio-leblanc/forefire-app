@@ -7,10 +7,11 @@
       wasm-unsafe-eval: compilar o motor ForeFire.
       blob: nos workers: o Maplibre cria os dele assim.
       tiles.openfreemap.org: basemap (SPEC §11, a confirmar).
+      data: no connect-src: o Maplibre busca a imagem da paisagem com fetch.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; connect-src 'self' https://tiles.openfreemap.org; font-src 'self'"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; connect-src 'self' data: https://tiles.openfreemap.org; font-src 'self'"
     />
   </head>
 

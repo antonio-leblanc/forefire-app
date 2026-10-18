@@ -9,20 +9,23 @@
 
   maplibregl.setWorkerUrl(workerUrl)
 
-  // Basemap sem key; a escolha definitiva está em aberto (SPEC §11).
-  const STYLE = 'https://tiles.openfreemap.org/styles/liberty'
+  // Basemap sem key e leve (pouco rótulo, sem prédio 3D): a paisagem é que é o
+  // assunto. A escolha definitiva está em aberto (SPEC §11).
+  const STYLE = 'https://tiles.openfreemap.org/styles/positron'
   // Uma isócrona a cada tantos frames; a frente atual sai sempre.
   const ISO_EVERY = 10
 
   interface Props {
     domain: Domain
+    /** Imagem da paisagem (data URL), esticada sobre o domínio. */
+    landscapeImage: string
     ignition: [number, number]
     frames: Frame[]
     /** Frame mostrado como frente atual. */
     current: number
     onignite: (xy: [number, number]) => void
   }
-  let { domain, ignition, frames, current, onignite }: Props = $props()
+  let { domain, landscapeImage, ignition, frames, current, onignite }: Props = $props()
 
   let container: HTMLDivElement
   let map: maplibregl.Map | null = $state(null)
@@ -51,12 +54,20 @@
     m.on('load', () => {
       for (const id of ['domain', 'isochrones', 'front', 'ignition']) m.addSource(id, { type: 'geojson', data: empty })
 
-      m.addLayer({
-        id: 'domain-fill',
-        type: 'fill',
-        source: 'domain',
-        paint: { 'fill-color': '#000', 'fill-opacity': 0.08 }
+      const S = domain.side
+      m.addSource('landscape', {
+        type: 'image',
+        url: landscapeImage,
+        // Cantos na ordem do Maplibre: noroeste, nordeste, sudeste, sudoeste.
+        coordinates: [toLngLat(domain, 0, S), toLngLat(domain, S, S), toLngLat(domain, S, 0), toLngLat(domain, 0, 0)]
       })
+      m.addLayer({
+        id: 'landscape',
+        type: 'raster',
+        source: 'landscape',
+        paint: { 'raster-opacity': 0.8, 'raster-resampling': 'nearest' }
+      })
+
       m.addLayer({
         id: 'domain-line',
         type: 'line',
