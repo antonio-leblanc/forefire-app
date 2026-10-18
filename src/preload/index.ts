@@ -1,7 +1,9 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
-// API exposta pro renderer. Vazia no M1: filesystem e downloads entram no M2,
-// sempre por aqui, nunca com Node no renderer.
-const api = {}
+// API exposta pro renderer: tudo de disco passa por aqui, nunca com Node no renderer.
+const api: Window['api'] = {
+  openLandscape: () => ipcRenderer.invoke('landscape:open'),
+  lastLandscape: () => ipcRenderer.invoke('landscape:last')
+}
 
 contextBridge.exposeInMainWorld('api', api)

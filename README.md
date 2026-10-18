@@ -19,6 +19,17 @@ O motor já vem buildado em `src/renderer/public/engine/` (o commit de origem es
 npm run build:wasm   # no Windows, roda via WSL
 ```
 
+## Paisagens reais
+
+O app abre pacotes de paisagem gerados pelo script em `pipeline/` a partir do ESA WorldCover e do Copernicus DEM (SPEC §5). Precisa de [uv](https://docs.astral.sh/uv/):
+
+```sh
+cd pipeline
+uv run build.py      # área e resolução no topo do arquivo; sai em pipeline/out/
+```
+
+No app, **Abrir…** e escolha a pasta do pacote.
+
 ## Licença
 
 GPL-3.0, a mesma do motor.

@@ -2,7 +2,7 @@
 
 **Spec-driven development.** Toda decisão arquitetural, trade-off e milestone mora aqui. O código segue o spec, não o contrário. O passo a passo do milestone atual fica em [`PLAN.md`](./PLAN.md).
 
-Status: M1 concluído, M2 a seguir. Última atualização: 2026-10-18.
+Status: M1 concluído, M2 em andamento. Última atualização: 2026-10-18.
 
 ---
 
@@ -24,7 +24,7 @@ Projeto pessoal pra estudar o ForeFire: entender na prática como a propagação
 **Decisão:** Electron, com [electron-vite](https://electron-vite.org/) como build.
 
 **Por quê:**
-- **CORS e filesystem.** O bucket público do WorldCover aceita range request mas não manda `Access-Control-Allow-Origin`, então só o processo main consegue ler direto. Cache em disco também é natural no main.
+- **Filesystem.** O app abre pacotes de paisagem do disco (§5), e isso é natural no processo main.
 - Mesmo Chromium em todas as plataformas: o WASM do ForeFire já roda em Chromium.
 - Peso (~150MB) aceitável pra app desktop.
 
@@ -45,10 +45,10 @@ Projeto pessoal pra estudar o ForeFire: entender na prática como a propagação
 
 Curvas de ROS do Modo Lab. D3 ou Observable Plot, decidido quando o Lab começar.
 
-### 2.5 Cache local: arquivos + índice JSON
+### 2.5 Dados locais: pacotes de paisagem
 
-- Sem banco no M1/M2. Raster em GeoTIFF no disco, metadados num `index.json`.
-- SQLite só se o índice ficar grande demais (o `better-sqlite3` é módulo nativo e exige rebuild pro Electron).
+- Sem banco. Cada paisagem é uma pasta no disco (§5.2), gerada fora do app.
+- SQLite só se um dia houver índice grande de paisagens (o `better-sqlite3` é módulo nativo e exige rebuild pro Electron).
 
 ### 2.6 Motor: WASM
 
@@ -69,7 +69,7 @@ Curvas de ROS do Modo Lab. D3 ou Observable Plot, decidido quando o Lab começar
 ```
 ┌─────────────────────────────────────────────┐
 │                Electron Main                 │
-│   filesystem (cache) · downloads (M2)        │
+│   abre pacotes de paisagem (filesystem)      │
 ├──────────────────── IPC ────────────────────┤
 │               Electron Renderer              │
 │   Svelte: mapa (Maplibre) · controles ·      │
@@ -82,6 +82,7 @@ Curvas de ROS do Modo Lab. D3 ou Observable Plot, decidido quando o Lab começar
 └─────────────────────────────────────────────┘
 ```
 
+- Fora do app: `pipeline/` (Python) baixa os dados reais e gera os pacotes de paisagem (§5).
 - Renderer não acessa disco: tudo de arquivo passa por IPC (`contextIsolation`, sem `nodeIntegration`).
 - O worker recebe a paisagem pronta (arrays + `fuelsTable`) e a config (ignição, vento, duração), calcula a timeline inteira e devolve os frames de uma vez. A UI faz scrub nos frames, sem esperar o solver.
 
@@ -103,31 +104,42 @@ O que a paisagem precisa ser pra entrar no ForeFire, conferido no binding e na d
 
 ## 5. Pipeline de dados reais (M2)
 
-Só entra depois que a paisagem sintética roda de ponta a ponta.
+O download e o processamento dos dados reais ficam **fora do app**, num script Python em `pipeline/` (rodado com `uv`). O app só abre o resultado: um pacote de paisagem.
 
-### 5.1 Combustível
-- **Fonte:** [ESA WorldCover](https://registry.opendata.aws/esa-worldcover-vito/) (10m, COG no S3, sem key, CC-BY 4.0: **atribuição obrigatória** na UI).
-- **Leitura:** `geotiff.js` no main, com range request só na bounding box.
-- **Classes WorldCover → combustível:** em aberto, e é decisão de física, não de código. Até lá, o M2 usa poucas classes mapeadas para linhas existentes do `fuels.csv`, de forma explícita e marcada como aproximação.
+**Por quê:** reprojetar e reamostrar raster é trivial com `rasterio`, e sofrido com `geotiff.js`. O mapeamento de combustível pede iteração rápida (rodar, olhar, ajustar), e isso é mais fácil em Python. E o formato do pacote vira o contrato entre os dois lados.
 
-### 5.2 Elevação
-- **Fonte:** [Copernicus DEM GLO-30](https://registry.opendata.aws/copernicus-dem/) (COG no S3, sem key). Alternativa: tiles [Terrarium](https://registry.opendata.aws/terrain-tiles/).
-- O OpenTopography exige API key: descartado.
+**Custo:** quem quiser paisagem real precisa de Python. **Revisitar se** isso pesar (no M5, por exemplo): o download migra pro main do Electron e o formato do pacote continua o mesmo.
 
-### 5.3 Reprojeção
-- WorldCover e Copernicus vêm em EPSG:4326. O motor quer grade métrica: reamostrar pra uma grade local em metros centrada na bounding box. A aproximação local serve até ~30 km de lado.
+### 5.1 Fontes
+- **Combustível:** [ESA WorldCover](https://registry.opendata.aws/esa-worldcover-vito/) 2021 v200 (10 m, COG no S3, sem key, CC-BY 4.0: **atribuição obrigatória** na UI).
+- **Relevo:** [Copernicus DEM GLO-30](https://registry.opendata.aws/copernicus-dem/) (COG no S3, sem key). O OpenTopography exige API key: descartado.
+- **Vento:** continua manual no M2. O [Open-Meteo](https://open-meteo.com/) (sem key, vento a 10 m no centro da área) fica pra depois.
 
-### 5.4 Vento
-- [Open-Meteo](https://open-meteo.com/) (sem key): só velocidade e direção a 10m, no centro da área. O usuário pode sobrescrever.
+### 5.2 Pacote de paisagem
+Uma pasta autocontida, já no formato que o motor espera (§4):
 
-### 5.5 Cache
 ```
-~/.forefire-app/
-├── index.json      # bounding boxes, datas, fontes
-├── fuels/          # GeoTIFF recortado
-└── elevation/      # GeoTIFF recortado
+<nome>/
+├── meta.json      # centro, lado, nx/ny, fontes, data, versão do mapeamento
+├── fuel.bin       # Int32 little-endian, ordem C (y, x), linha 0 = sul
+├── altitude.bin   # Float64 little-endian, mesma grade
+└── fuels.csv      # a fuelsTable usada; os índices de fuel.bin apontam pra ela
 ```
-Tamanho esperado: MB, não GB (10 km de WorldCover ≈ 1000×1000 px).
+
+- **Grade quadrada**, definida por centro (lon/lat) e lado em metros, igual à paisagem sintética.
+- **Mesma conversão metro ↔ lat/lon do app** (`landscape/geo.ts`: aproximação local pelo canto sudoeste, boa até ~30 km de lado). O script calcula o lat/lon do centro de cada célula com essa fórmula e amostra os rasters ali: vizinho mais próximo pro WorldCover (classe é categórica), bilinear pro DEM. Assim, o que o motor vê bate com o que o mapa desenha.
+- **Binário cru em vez de GeoTIFF:** o app lê sem dependência nova e entrega os arrays direto ao motor. Pra inspecionar em QGIS, o script pode gerar um GeoTIFF à parte.
+- O `fuels.csv` vai junto porque o pacote não pode quebrar se o mapeamento mudar depois.
+
+### 5.3 Mapeamento WorldCover → combustível
+- **Próprio**, feito a partir das classes públicas do WorldCover e da literatura, com cada escolha justificada em `pipeline/MAPEAMENTO.md`. É a parte de estudo de física do M2.
+- Toda escolha é uma **aproximação explícita**: uma classe de cobertura do solo não é um modelo de combustível. Isso fica escrito no `MAPEAMENTO.md` e aparece na UI.
+- Classes sem combustível (água, área construída, neve, solo exposto) viram barreira (§4: profundidade zero).
+
+### 5.4 Relevo: dois modos
+- O pacote traz a altitude real, e o app tem um toggle **Relevo**: ligado usa o `altitude.bin`, desligado manda altitude zero. Mesma ignição e mesmo vento, rodados dos dois jeitos, mostram o efeito do declive.
+- O desenvolvimento começa com o relevo desligado, pra isolar o efeito do combustível.
+- Relevo 3D *visual* (terrain do Maplibre) é outra coisa e fica pra depois (§6.1).
 
 ---
 
@@ -135,12 +147,13 @@ Tamanho esperado: MB, não GB (10 km de WorldCover ≈ 1000×1000 px).
 
 ### 6.1 Modo Simulação
 - Paisagem (sintética no M1, real no M2) posicionada no mapa
+- Toggle de relevo: plano ou com a altitude real (§5.4)
 - Ignição por clique
 - Vento (velocidade + direção) e duração
 - Rodar → frentes desenhadas no mapa, isócronas coloridas, área queimada
 - Timeline com scrub
 
-Depois: múltiplas ignições, pintar combustível, exportar (GeoJSON/GeoTIFF), salvar cenário.
+Depois: múltiplas ignições, pintar combustível, exportar (GeoJSON/GeoTIFF), salvar cenário, relevo 3D no mapa (terrain do Maplibre).
 
 ### 6.2 Modo Lab
 - **Model Playground:** curvas de ROS (ROS × vento, ROS × declive, ROS × umidade) usando o comando `computeSpeed[...]` do motor
@@ -171,8 +184,8 @@ Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite.
 
 ## 9. Milestones
 
-- **M1 — Motor no app:** Electron + Svelte + Maplibre, WASM no worker, paisagem sintética (colina + combustíveis do `fuels.csv`), ignição por clique, vento, frentes no mapa, timeline. Detalhe em [`PLAN.md`](./PLAN.md).
-- **M2 — Dados reais:** WorldCover + Copernicus DEM por bounding box no main, reprojeção, cache, vento do Open-Meteo, atribuição.
+- **M1 — Motor no app (concluído):** Electron + Svelte + Maplibre, WASM no worker, paisagem sintética (colina + combustíveis do `fuels.csv`), ignição por clique, vento, frentes no mapa, timeline.
+- **M2 — Dados reais:** script Python gera pacote de paisagem (WorldCover + Copernicus DEM) com mapeamento de combustível próprio; app abre o pacote, com toggle de relevo e atribuição. Detalhe em [`PLAN.md`](./PLAN.md).
 - **M3 — Lab:** curvas de ROS com `computeSpeed`, Fuel Studio.
 - **M4 — Cenários:** múltiplas ignições, pintar combustível, salvar/carregar, exportar.
 - **M5 — Distribuição:** instaladores, offline completo (PMTiles), i18n (PT-BR, EN, FR).
@@ -184,7 +197,7 @@ Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite.
 | Risco | Prob. | Impacto | Mitigação |
 |---|---|---|---|
 | Solver lento em grade fina | Média | Alto | Medir tempo × tamanho de célula (não × km²); a demo roda 30 km com grade 256 |
-| Mapeamento WorldCover → combustível sem base física | Alta | Médio | M1 não depende dele; M2 usa aproximação explícita |
+| Mapeamento WorldCover → combustível sem base física | Alta | Médio | Cada escolha justificada em `pipeline/MAPEAMENTO.md` e marcada como aproximação na UI |
 | Estado global vazar entre simulações | Baixa | Médio | Module novo por run; teste no M1 |
 | Electron pesado demais | Baixa | Baixo | Testar em hardware modesto |
 
@@ -195,13 +208,13 @@ Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite.
 - [x] Licença: GPL-3.0 (o motor é GPL-3.0 e o `.wasm` vai empacotado)
 - [x] Repo: `antonio-leblanc/forefire-app`, separado do motor
 - [x] Fonte do WASM: `feat/wasm-binding` do fork `antonio-leblanc/forefire`
-- [x] Cache: arquivos + `index.json`, sem SQLite
+- [x] Dados reais: script Python fora do app gera pacote de paisagem (pasta com `.bin` + `meta.json`), sem SQLite
 - [x] Dados sem key: WorldCover (S3) e Copernicus DEM (S3); OpenTopography descartado
 - [x] Offline de mapa: PMTiles
 - [ ] Nome final
 - [ ] Basemap do M1 (sem key e com termos que permitam uso em app)
 - [ ] Electron Forge vs electron-builder (decidir no M5)
-- [ ] Mapeamento WorldCover → combustível
+- [x] Mapeamento WorldCover → combustível: próprio, a partir das classes públicas (conteúdo no M2)
 
 ---
 

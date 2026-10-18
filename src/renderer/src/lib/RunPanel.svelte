@@ -2,17 +2,35 @@
   import { onMount } from 'svelte'
   import type { Engine } from '../engine/client'
   import type { Landscape, Timeline } from '../engine/types'
-  import { FUELS } from '../landscape/fuels'
+  import type { PackMeta } from '../landscape/pack'
+  import { FUEL_STYLE } from '../landscape/render'
 
   interface Props {
     engine: Engine
-    landscape: Landscape
+    landscape: Landscape | null
+    meta: PackMeta | null
+    error: string
     ignition: [number, number]
     timeline: Timeline | null
     current: number
+    relief: boolean
+    showFuel: boolean
     ontimeline: (t: Timeline | null) => void
+    onopen: () => void
   }
-  let { engine, landscape, ignition, timeline, current = $bindable(), ontimeline }: Props = $props()
+  let {
+    engine,
+    landscape,
+    meta,
+    error,
+    ignition,
+    timeline,
+    current = $bindable(),
+    relief = $bindable(),
+    showFuel = $bindable(),
+    ontimeline,
+    onopen
+  }: Props = $props()
 
   let status = $state('carregando o motor…')
   let running = $state(false)
@@ -31,6 +49,7 @@
   const engineAngle = (from: number): number => -90 - from
 
   async function run(): Promise<void> {
+    if (!landscape) return
     running = true
     playing = false
     ontimeline(null)
@@ -85,12 +104,28 @@
 </script>
 
 <div class="panel">
+  <div class="row between">
+    <strong>{meta ? meta.nome : 'nenhuma paisagem'}</strong>
+    <button onclick={onopen}>Abrir…</button>
+  </div>
+  {#if error}<p class="error">{error}</p>{/if}
+  {#if !meta}<p>gere um pacote com o <code>pipeline/</code> e abra a pasta</p>{/if}
+
+  <label class="check">
+    <input type="checkbox" bind:checked={relief} onchange={() => ontimeline(null)} />
+    relevo
+  </label>
+  <label class="check">
+    <input type="checkbox" bind:checked={showFuel} />
+    combustível no mapa
+  </label>
+
   <label>
     vento de {fromName}, {windSpeed} m/s
     <input type="range" min="0" max="15" step="0.5" bind:value={windSpeed} />
     <input type="range" min="0" max="359" step="1" bind:value={windFrom} />
   </label>
-  <button onclick={run} disabled={running}>Rodar 1 h</button>
+  <button onclick={run} disabled={running || !landscape}>Rodar 1 h</button>
   <p>{status}</p>
 
   {#if timeline && frame}
@@ -119,12 +154,15 @@
     </dl>
   {/if}
 
-  <ul class="legend">
-    {#each FUELS as f (f.index)}
-      <li><span style:background={`rgb(${f.rgb.join(',')})`}></span>{f.label}</li>
-    {/each}
-    <li class="note">colina de 400 m ao norte do centro (sombreada)</li>
-  </ul>
+  {#if showFuel && meta}
+    <ul class="legend">
+      {#each Object.entries(FUEL_STYLE) as [index, f] (index)}
+        <li><span style:background={`rgb(${f.rgb.join(',')})`}></span>{f.label}</li>
+      {/each}
+      <li class="note">transparente: sem combustível (barreira)</li>
+      <li class="note">aproximação a partir de cobertura do solo (mapeamento {meta.mapeamento})</li>
+    </ul>
+  {/if}
 </div>
 
 <style>
@@ -151,6 +189,18 @@
     display: flex;
     align-items: flex-end;
     gap: 8px;
+  }
+  .between {
+    justify-content: space-between;
+    align-items: center;
+  }
+  .check {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+  .error {
+    color: #ff8a80;
   }
   .grow {
     flex: 1;

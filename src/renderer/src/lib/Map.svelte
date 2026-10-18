@@ -17,15 +17,18 @@
 
   interface Props {
     domain: Domain
-    /** Imagem da paisagem (data URL), esticada sobre o domínio. */
-    landscapeImage: string
+    /** Combustível (data URL), esticado sobre o domínio. */
+    fuelImage: string
+    showFuel: boolean
+    /** Fontes dos dados da paisagem, no rodapé do mapa. */
+    attribution: string
     ignition: [number, number]
     frames: Frame[]
     /** Frame mostrado como frente atual. */
     current: number
     onignite: (xy: [number, number]) => void
   }
-  let { domain, landscapeImage, ignition, frames, current, onignite }: Props = $props()
+  let { domain, fuelImage, showFuel, attribution, ignition, frames, current, onignite }: Props = $props()
 
   let container: HTMLDivElement
   let map: maplibregl.Map | null = $state(null)
@@ -46,7 +49,8 @@
       container,
       style: STYLE,
       center: toLngLat(domain, domain.side / 2, domain.side / 2),
-      zoom: 13
+      zoom: 13,
+      attributionControl: { customAttribution: attribution }
     })
     m.addControl(new maplibregl.NavigationControl(), 'top-right')
     m.addControl(new maplibregl.ScaleControl({ unit: 'metric' }))
@@ -55,17 +59,18 @@
       for (const id of ['domain', 'isochrones', 'front', 'ignition']) m.addSource(id, { type: 'geojson', data: empty })
 
       const S = domain.side
-      m.addSource('landscape', {
+      m.addSource('fuel', {
         type: 'image',
-        url: landscapeImage,
+        url: fuelImage,
         // Cantos na ordem do Maplibre: noroeste, nordeste, sudeste, sudoeste.
         coordinates: [toLngLat(domain, 0, S), toLngLat(domain, S, S), toLngLat(domain, S, 0), toLngLat(domain, 0, 0)]
       })
       m.addLayer({
-        id: 'landscape',
+        id: 'fuel',
         type: 'raster',
-        source: 'landscape',
-        paint: { 'raster-opacity': 0.8, 'raster-resampling': 'nearest' }
+        source: 'fuel',
+        layout: { visibility: showFuel ? 'visible' : 'none' },
+        paint: { 'raster-opacity': 0.5 }
       })
 
       m.addLayer({
@@ -108,6 +113,10 @@
 
   const geo = (id: string): maplibregl.GeoJSONSource | undefined =>
     map?.getSource(id) as maplibregl.GeoJSONSource | undefined
+
+  $effect(() => {
+    map?.setLayoutProperty('fuel', 'visibility', showFuel ? 'visible' : 'none')
+  })
 
   $effect(() => {
     geo('domain')?.setData({

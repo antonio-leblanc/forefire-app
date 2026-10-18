@@ -1,49 +1,43 @@
-# PLAN — M1: motor no app (concluído)
+# PLAN — M2: dados reais
 
-Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md); aqui fica só a execução. Cada passo termina com algo que dá pra ver rodando.
+Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md) (§5); aqui fica só a execução. Cada passo termina com algo que dá pra ver rodando.
 
-## 1. WASM buildado do fork
-- [x] Clonar `antonio-leblanc/forefire` no WSL (`~/gitrepos/forefire`), branch `feat/wasm-binding`
-- [x] Buildar com emsdk (`emcmake cmake -DFOREFIRE_ENABLE_NETCDF=OFF ...`) → `forefire.mjs` + `forefire.wasm`
-- [x] Rodar o `bindings/wasm/smoke.mjs` e conferir que passa
-- [x] Script `scripts/build-wasm.sh` no app, que faz isso e copia os artefatos pra `src/renderer/public/engine/`
-- [x] Teste: duas simulações em dois Modules diferentes não vazam estado (#175)
+## 1. Pipeline: primeiro pacote
+- [x] Projeto `uv` em `pipeline/` (`rasterio`, `numpy`)
+- [x] Área de desenvolvimento: 5 km em Alto Paraíso de Goiás (Chapada dos Veadeiros), com mata, arbusto, campo, cultivo, cidade e um pouco de água
+- [x] Script com centro e lado no topo do arquivo: lê só a janela necessária do COG do WorldCover no S3
+- [x] Grade com a mesma conversão do `landscape/geo.ts`; amostra por vizinho mais próximo; célula de 20 m (como no M1), e só desce pra 10 m depois de medir o tempo do solver
+- [x] Mapeamento provisório: mata/arbusto → linha 5, campo/cultivo → linha 4, o resto → barreira
+- [x] Escreve o pacote (§5.2) numa pasta ignorada pelo git, mais um GeoTIFF de inspeção
 
-**Pronto quando:** o app tem um `.wasm` reproduzível a partir de um commit conhecido do fork.
+**Pronto quando:** o GeoTIFF de inspeção, aberto por cima do WorldCover, bate no lugar e na forma. Conferido pelo centróide: a área construída cai em cima da cidade.
 
-## 2. Esqueleto do app
-- [x] electron-vite + Svelte (template oficial)
-- [x] `contextIsolation` ligado, sem `nodeIntegration`, preload mínimo
-- [x] Janela com Maplibre em tela cheia
+## 2. App abre o pacote
+- [x] IPC no main: escolher a pasta, ler `meta.json`, os `.bin` e o `fuels.csv`, devolver ao renderer
+- [x] Renderer monta a `Landscape` do pacote no lugar da sintética
+- [x] Raster de combustível como camada opcional, desligada por padrão
+- [x] Sai a paisagem sintética do M1
+- [ ] Conferir no app: lugar certo, fogo parando na cidade
 
-**Pronto quando:** `npm run dev` abre uma janela com mapa.
+**Pronto quando:** a paisagem real aparece no lugar certo e o fogo roda nela, parando nos rios e nas áreas construídas.
 
-## 3. Motor no worker
-- [x] Portar `worker.mjs` da demo (`feat/wasm-on-dev`) pra `src/renderer/src/engine/worker.ts`
-- [x] Module novo a cada simulação (reaproveitando o `WebAssembly.Module` compilado)
-- [x] Mensagens: `run { landscape, ignition, wind, steps, dt }` → `timeline { frames, outcome }` (`engine/types.ts`)
+## 3. Mapeamento próprio
+- [ ] Estudar as classes do WorldCover e as colunas do Rothermel no `fuels.csv` (o que `sd`, `Md`, `Sigmad`, `e` significam)
+- [ ] Escolher uma linha (ou criar uma, a partir da literatura) pra cada classe
+- [ ] `pipeline/MAPEAMENTO.md`: classe → combustível, com a justificativa e a fonte de cada escolha
+- [ ] Versão do mapeamento no `meta.json`
 
-**Pronto quando:** um botão roda uma simulação em terreno plano e mostra a área queimada.
+**Pronto quando:** cada classe tem combustível justificado, e o fogo se comporta como o mapeamento diz que deveria (corre mais rápido no campo do que na floresta, por exemplo).
 
-**Pendente pro build de produção:** com `loadFile` o motor viria de `file://`, e o `fetch` do `.wasm` não funciona assim. Resolver com um protocolo próprio (`app://`) no main antes do M5.
+## 4. Relevo
+- [x] Pipeline lê o Copernicus DEM (bilinear) e grava o `altitude.bin` real
+- [x] Toggle **Relevo** no app: ligado usa o `altitude.bin`, desligado manda zeros
+- [ ] Hillshade do relevo real no mapa
 
-## 4. Paisagem sintética
-- [x] Gerador: colina gaussiana + manchas de combustível (linhas 0, 4 e 5 do `fuels.csv`): `landscape/synthetic.ts`
-- [x] Posicionada numa lat/lon fixa, convertida pra metros (contrato do SPEC §4)
-- [x] Desenhada no mapa como raster (combustível) + hillshade simples
+**Pronto quando:** a mesma ignição, com e sem relevo, dá frentes diferentes num declive visível.
 
-**Pronto quando:** a paisagem aparece no mapa no lugar certo.
+## 5. Atribuição e aviso
+- [x] Atribuição do ESA WorldCover (CC-BY 4.0) e do Copernicus DEM na UI (rodapé do mapa, lida do `meta.json`)
+- [ ] Aviso de que o combustível é aproximação a partir de cobertura do solo, com link pro `MAPEAMENTO.md`
 
-## 5. Simulação no mapa
-- [x] Clique no mapa → ponto de ignição em metros
-- [x] Controles de vento (velocidade, direção); duração fixa em 1 h
-- [x] Frentes convertidas de metros pra lat/lon e desenhadas, coloridas por tempo (isócronas)
-- [x] Área queimada na tela
-
-**Pronto quando:** o fogo sobe a colina mais rápido do que desce. Conferido: sem vento, 435 m morro acima contra 122 m morro abaixo em 1 h; a estrada de 40 m segura o fogo até com vento de 10 m/s.
-
-## 6. Timeline
-- [x] Slider sobre os frames já calculados
-- [x] Play/pause
-
-**Pronto quando:** dá pra voltar e avançar o fogo sem rodar o solver de novo.
+**Pronto quando:** o app mostra de onde vem cada dado e o que é aproximação.
