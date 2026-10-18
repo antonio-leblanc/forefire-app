@@ -171,6 +171,23 @@ Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite.
 - **Progresso visível.** Nada "clicou e sumiu".
 - Atalhos e undo: só onde fizer falta, não "pra tudo".
 
+### 7.1 Layout
+
+Cara de software desktop, não de mapa com popup. O mapa ocupa quase tudo; nada de segundo painel lateral, que divide a tela e deixa as duas metades ilegíveis.
+
+- **Header:** logo do ForeFire, paisagem aberta (vira o seletor de paisagem), versão do motor. As abas de modo só aparecem quando existir mais de um modo (o Lab entra no M3).
+- **Sidebar à esquerda**, na ordem do fluxo: Paisagem (dados, toggles de relevo e combustível) → Ignição → Vento (rosa dos ventos em que se arrasta a direção) → Simulação (duração + botão de rodar, a ação principal).
+- **Mapa:** o resto da tela. Os números do run (área queimada, situação, solver) num cartão flutuante em cima dele.
+- **Timeline** no rodapé do mapa: play, scrub, isócronas.
+- **Barra de status:** atribuição dos dados e o aviso de que o combustível é aproximação.
+
+### 7.2 Visual
+
+- Moldura escura (header, sidebar, timeline) e mapa claro: o mapa é o assunto, a moldura não compete com ele.
+- Destaque no laranja da chama do logo; fundo marrom quase preto, não cinza neutro.
+- IBM Plex Sans no texto e IBM Plex Mono nos números, empacotadas no app (o app precisa rodar offline, §9 M5).
+- Ícone do executável e da janela: o logo do ForeFire num quadrado escuro arredondado. Título da janela: `ForeFire — <paisagem>`.
+
 ---
 
 ## 8. O que NÃO é
@@ -185,7 +202,7 @@ Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite.
 ## 9. Milestones
 
 - **M1 — Motor no app (concluído):** Electron + Svelte + Maplibre, WASM no worker, paisagem sintética (colina + combustíveis do `fuels.csv`), ignição por clique, vento, frentes no mapa, timeline.
-- **M2 — Dados reais:** script Python gera pacote de paisagem (WorldCover + Copernicus DEM) com mapeamento de combustível próprio; app abre o pacote, com toggle de relevo e atribuição. Detalhe em [`PLAN.md`](./PLAN.md).
+- **M2 — Dados reais:** script Python gera pacote de paisagem (WorldCover + Copernicus DEM) com mapeamento de combustível próprio; app abre o pacote, com toggle de relevo e atribuição. Inclui a casca do app (§7.1, §7.2). Detalhe em [`PLAN.md`](./PLAN.md).
 - **M3 — Lab:** curvas de ROS com `computeSpeed`, Fuel Studio.
 - **M4 — Cenários:** múltiplas ignições, pintar combustível, salvar/carregar, exportar.
 - **M5 — Distribuição:** instaladores, offline completo (PMTiles), i18n (PT-BR, EN, FR).
@@ -215,6 +232,9 @@ Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite.
 - [ ] Basemap do M1 (sem key e com termos que permitam uso em app)
 - [ ] Electron Forge vs electron-builder (decidir no M5)
 - [x] Mapeamento WorldCover → combustível: próprio, a partir das classes públicas (conteúdo no M2)
+- [x] Layout: header + sidebar + mapa quase inteiro + timeline + barra de status; moldura escura, mapa claro (§7)
+- [x] Ícone: o logo do ForeFire
+- [x] Aba do Lab só no M3, quando o modo existir
 
 ---
 

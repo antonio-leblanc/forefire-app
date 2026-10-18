@@ -21,7 +21,17 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md) (
 
 **Pronto quando:** a paisagem real aparece no lugar certo e o fogo roda nela, parando nos rios e nas áreas construídas.
 
-## 3. Mapeamento próprio
+## 3. Casca do app
+Vem antes do resto do M2: hillshade, legenda e aviso de aproximação já nascem no layout novo (SPEC §7.1, §7.2).
+- [ ] Tema: cores do SPEC §7.2 como variáveis no `app.css`; IBM Plex Sans e Mono via `@fontsource`
+- [ ] Layout: o `RunPanel` vira `Header`, `Sidebar` (Paisagem, Ignição, Vento, Simulação), `Timeline` e `StatusBar`; a lógica só muda de lugar
+- [ ] Cartão flutuante no mapa: área queimada, situação, solver
+- [ ] Rosa dos ventos: arrastar a direção no lugar do slider de 0–359°
+- [ ] Ícone a partir do `ff_logo.png` do motor (`.png`, `.ico`, `.icns`); título da janela `ForeFire — <paisagem>`
+
+**Pronto quando:** o app faz exatamente o que faz hoje, com a cara do SPEC §7, e aparece com o logo na barra de tarefas.
+
+## 4. Mapeamento próprio
 - [ ] Estudar as classes do WorldCover e as colunas do Rothermel no `fuels.csv` (o que `sd`, `Md`, `Sigmad`, `e` significam)
 - [ ] Escolher uma linha (ou criar uma, a partir da literatura) pra cada classe
 - [ ] `pipeline/MAPEAMENTO.md`: classe → combustível, com a justificativa e a fonte de cada escolha
@@ -29,14 +39,14 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md) (
 
 **Pronto quando:** cada classe tem combustível justificado, e o fogo se comporta como o mapeamento diz que deveria (corre mais rápido no campo do que na floresta, por exemplo).
 
-## 4. Relevo
+## 5. Relevo
 - [x] Pipeline lê o Copernicus DEM (bilinear) e grava o `altitude.bin` real
 - [x] Toggle **Relevo** no app: ligado usa o `altitude.bin`, desligado manda zeros
 - [ ] Hillshade do relevo real no mapa
 
 **Pronto quando:** a mesma ignição, com e sem relevo, dá frentes diferentes num declive visível.
 
-## 5. Atribuição e aviso
+## 6. Atribuição e aviso
 - [x] Atribuição do ESA WorldCover (CC-BY 4.0) e do Copernicus DEM na UI (rodapé do mapa, lida do `meta.json`)
 - [ ] Aviso de que o combustível é aproximação a partir de cobertura do solo, com link pro `MAPEAMENTO.md`
 
