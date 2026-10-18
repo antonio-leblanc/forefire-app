@@ -26,8 +26,8 @@ Vem antes do resto do M2: hillshade, legenda e aviso de aproximação já nascem
 - [x] Tema: cores do SPEC §7.2 como variáveis no `app.css`; IBM Plex Sans e Mono via `@fontsource`
 - [x] Layout: o `RunPanel` vira `Header`, `Sidebar` (Paisagem, Ignição, Vento, Simulação), `Timeline` e `StatusBar`; a lógica só muda de lugar
 - [x] Cartão flutuante no mapa: área queimada, situação, solver
-- [ ] Rosa dos ventos: arrastar a direção no lugar do slider de 0–359°
-- [ ] Ícone a partir do `ff_logo.png` do motor (`.png`, `.ico`, `.icns`); título da janela `ForeFire — <paisagem>`
+- [x] Rosa dos ventos: arrastar a direção no lugar do slider de 0–359°
+- [x] Ícone a partir do `ff_logo.png` do motor (`.png`, `.ico`, `.icns`, gerados por `scripts/make_icon.py`); título da janela `ForeFire — <paisagem>`
 
 **Pronto quando:** o app faz exatamente o que faz hoje, com a cara do SPEC §7, e aparece com o logo na barra de tarefas.
 

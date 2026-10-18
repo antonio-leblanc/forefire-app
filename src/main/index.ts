@@ -11,7 +11,8 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     title: 'ForeFire',
-    ...(process.platform === 'linux' ? { icon } : {}),
+    // No macOS o ícone vem do bundle (build/icon.icns).
+    ...(process.platform !== 'darwin' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       // Renderer não toca disco nem Node: tudo passa pelo preload (SPEC §3).

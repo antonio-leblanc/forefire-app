@@ -62,6 +62,33 @@
     const tail: [number, number] = [50 - 30 * Math.sin(a), 50 + 30 * Math.cos(a)]
     return { tip, tail, deg: windFrom + 180 }
   })
+
+  // Rosa dos ventos: clicar ou arrastar marca de onde o vento VEM (a cauda da
+  // seta vai pro ponto clicado). Passo de 5°.
+  let rose: SVGSVGElement
+  function aim(e: PointerEvent): void {
+    const r = rose.getBoundingClientRect()
+    const dx = e.clientX - (r.left + r.width / 2)
+    const dy = e.clientY - (r.top + r.height / 2)
+    if (dx === 0 && dy === 0) return
+    const deg = (Math.atan2(dx, -dy) * 180) / Math.PI
+    windFrom = (Math.round(deg / 5) * 5 + 360) % 360
+  }
+  function onpointerdown(e: PointerEvent): void {
+    rose.setPointerCapture(e.pointerId)
+    aim(e)
+  }
+  function onpointermove(e: PointerEvent): void {
+    if (rose.hasPointerCapture(e.pointerId)) aim(e)
+  }
+  function onkeydown(e: KeyboardEvent): void {
+    const step = e.shiftKey ? 45 : 5
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') windFrom = (windFrom + step) % 360
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown')
+      windFrom = (windFrom - step + 360) % 360
+    else return
+    e.preventDefault()
+  }
 </script>
 
 <aside>
@@ -117,11 +144,21 @@
     <h2>Wind</h2>
     <div class="wind">
       <svg
-        width="80"
-        height="80"
+        class="rose"
+        bind:this={rose}
+        width="88"
+        height="88"
         viewBox="0 0 100 100"
-        role="img"
-        aria-label={`Wind from the ${fromName}`}
+        role="slider"
+        tabindex="0"
+        aria-label="Wind direction (blowing from)"
+        aria-valuemin={0}
+        aria-valuemax={359}
+        aria-valuenow={windFrom}
+        aria-valuetext={`from the ${fromName}, ${windFrom}°`}
+        {onpointerdown}
+        {onpointermove}
+        {onkeydown}
       >
         <circle cx="50" cy="50" r="44" fill="var(--surface-2)" stroke="#3a342e" />
         <circle cx="50" cy="50" r="28" fill="none" stroke="var(--border)" />
@@ -143,19 +180,24 @@
           fill="var(--accent)"
           transform={`translate(${arrow.tip[0]} ${arrow.tip[1]}) rotate(${arrow.deg})`}
         />
+        <circle
+          cx={arrow.tail[0]}
+          cy={arrow.tail[1]}
+          r="5"
+          fill="var(--text)"
+          stroke="var(--accent)"
+          stroke-width="2"
+        />
       </svg>
       <div class="wind-read">
         <span class="mono big">{windSpeed.toLocaleString('en-US')} <small>m/s</small></span>
         <span class="note">from the {fromName} · {windFrom}°</span>
+        <span class="note hint">drag on the rose</span>
       </div>
     </div>
     <label>
       Speed
       <input type="range" min="0" max="15" step="0.5" bind:value={windSpeed} />
-    </label>
-    <label>
-      Direction (blowing from)
-      <input type="range" min="0" max="359" step="1" bind:value={windFrom} />
     </label>
   </section>
 
@@ -294,6 +336,19 @@
     font-family: var(--mono);
     font-size: 9px;
     text-anchor: middle;
+  }
+  .rose {
+    flex-shrink: 0;
+    cursor: crosshair;
+    touch-action: none;
+    border-radius: 50%;
+  }
+  .rose:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+  }
+  .hint {
+    font-size: 11px;
   }
   .wind-read {
     display: flex;
