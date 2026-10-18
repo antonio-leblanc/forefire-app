@@ -80,7 +80,7 @@ function build(Module: ForeFireModule, cfg: RunConfig): any {
     ff.addScalarLayer('windScalDir', 'windU', 0, 0, 0, S, S, 0, nx, ny, 2, 1, windU),
     ff.addScalarLayer('windScalDir', 'windV', 0, 0, 0, S, S, 0, nx, ny, 2, 1, windV)
   ]
-  if (ok.some((v) => !v)) throw new Error('uma camada não registrou no motor')
+  if (ok.some((v) => !v)) throw new Error('a layer failed to register in the engine')
   return ff
 }
 

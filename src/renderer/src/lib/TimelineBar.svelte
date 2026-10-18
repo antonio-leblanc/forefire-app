@@ -34,7 +34,7 @@
     class="play"
     onclick={togglePlay}
     disabled={!timeline}
-    aria-label={playing ? 'Pausar' : 'Reproduzir'}
+    aria-label={playing ? 'Pause' : 'Play'}
   >
     {#if playing}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -49,7 +49,7 @@
   <span class="time">t = {minutes} min <span class="muted">/ {total}</span></span>
   <input
     type="range"
-    aria-label="Tempo da simulação"
+    aria-label="Simulation time"
     min="0"
     max={timeline ? timeline.frames.length - 1 : 0}
     disabled={!timeline}
@@ -57,7 +57,7 @@
     oninput={() => (playing = false)}
   />
   {#if !timeline}
-    <span class="muted hint">Rode uma simulação pra ver a frente avançar.</span>
+    <span class="muted hint">Run a simulation to watch the fire front spread.</span>
   {/if}
 </div>
 

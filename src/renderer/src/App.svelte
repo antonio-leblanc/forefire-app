@@ -90,7 +90,7 @@
       current = 0
       playing = true
     } catch (err) {
-      error = `a simulação falhou: ${(err as Error).message}`
+      error = `simulation failed: ${(err as Error).message}`
     } finally {
       running = false
     }
@@ -146,9 +146,9 @@
           {/if}
         {:else}
           <div class="empty">
-            <p>Nenhuma paisagem aberta.</p>
+            <p>No landscape open.</p>
             <p class="hint">
-              Gere um pacote com o <code>pipeline/</code> e abra a pasta pelo header.
+              Build a package with <code>pipeline/</code> and open its folder from the header.
             </p>
           </div>
         {/if}

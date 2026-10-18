@@ -23,7 +23,7 @@ export function registerLandscapeIpc(): void {
     // Em dev, abre direto na saída do pipeline.
     const out = join(app.getAppPath(), 'pipeline', 'out')
     const r = await dialog.showOpenDialog({
-      title: 'Abrir paisagem',
+      title: 'Open landscape',
       properties: ['openDirectory'],
       defaultPath: existsSync(out) ? out : undefined
     })

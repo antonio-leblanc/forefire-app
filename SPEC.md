@@ -235,6 +235,7 @@ Cara de software desktop, não de mapa com popup. O mapa ocupa quase tudo; nada 
 - [x] Layout: header + sidebar + mapa quase inteiro + timeline + barra de status; moldura escura, mapa claro (§7)
 - [x] Ícone: o logo do ForeFire
 - [x] Aba do Lab só no M3, quando o modo existir
+- [x] Idioma da UI: inglês desde já; PT-BR e FR entram com o i18n do M5. Docs e comentários do código seguem em português
 
 ---
 

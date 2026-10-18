@@ -4,8 +4,8 @@ import type { Landscape } from '../engine/types'
 
 /** Cor e nome de cada linha do fuels.csv do pipeline. */
 export const FUEL_STYLE: Record<number, { label: string; rgb: [number, number, number] }> = {
-  5: { label: 'arbusto / mata (0,6 m)', rgb: [67, 140, 80] },
-  4: { label: 'capim / cultivo (0,19 m)', rgb: [214, 190, 92] }
+  5: { label: 'shrub / forest (0.6 m)', rgb: [67, 140, 80] },
+  4: { label: 'grass / cropland (0.19 m)', rgb: [214, 190, 92] }
 }
 
 export function renderFuel(land: Landscape & { fuel: Int32Array }): string {

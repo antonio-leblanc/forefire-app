@@ -15,10 +15,10 @@
 
   const engineLabel = $derived(
     version
-      ? `motor ForeFire ${version} · WASM`
+      ? `ForeFire engine ${version} · WASM`
       : engineReady
-        ? 'motor ForeFire · WASM'
-        : 'carregando o motor…'
+        ? 'ForeFire engine · WASM'
+        : 'loading engine…'
   )
 </script>
 
@@ -28,7 +28,7 @@
     <span>ForeFire</span>
   </div>
   <div class="sep"></div>
-  <button class="landscape" onclick={onopen} title="Abrir outra paisagem">
+  <button class="landscape" onclick={onopen} title="Open another landscape">
     <svg
       width="16"
       height="16"
@@ -41,9 +41,9 @@
       <path d="M3 20l6-12 4 7 3-4 5 9z" />
     </svg>
     {#if name}
-      {name} · {(side / 1000).toLocaleString('pt-BR')} km
+      {name} · {(side / 1000).toLocaleString('en-US')} km
     {:else}
-      Abrir paisagem…
+      Open landscape…
     {/if}
     <svg
       width="12"

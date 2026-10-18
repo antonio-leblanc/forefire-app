@@ -35,15 +35,24 @@
     onrun
   }: Props = $props()
 
-  const COMPASS = ['norte', 'nordeste', 'leste', 'sudeste', 'sul', 'sudoeste', 'oeste', 'noroeste']
+  const COMPASS = [
+    'north',
+    'northeast',
+    'east',
+    'southeast',
+    'south',
+    'southwest',
+    'west',
+    'northwest'
+  ]
   const fromName = $derived(COMPASS[Math.round((((windFrom % 360) + 360) % 360) / 45) % 8])
 
   const fmt = (v: number, pos: string, neg: string): string =>
-    `${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}° ${v < 0 ? neg : pos}`
+    `${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}° ${v < 0 ? neg : pos}`
   const ignitionLabel = $derived.by(() => {
     if (!domain) return '—'
     const [lon, lat] = toLngLat(domain, ignition[0], ignition[1])
-    return `${fmt(lat, 'N', 'S')} · ${fmt(lon, 'L', 'O')}`
+    return `${fmt(lat, 'N', 'S')} · ${fmt(lon, 'E', 'W')}`
   })
 
   // Seta da rosa: aponta pra onde o vento SOPRA (oposto de onde vem).
@@ -57,39 +66,39 @@
 
 <aside>
   <section>
-    <h2>Paisagem</h2>
+    <h2>Landscape</h2>
     {#if meta}
       <dl>
-        <dt>Grade</dt>
+        <dt>Grid</dt>
         <dd class="mono">{meta.nx} × {meta.ny} · {meta.lado / meta.nx} m</dd>
-        <dt>Combustível</dt>
+        <dt>Fuel</dt>
         <dd>{meta.fontes.combustivel?.dado ?? '—'}</dd>
-        <dt>Relevo</dt>
+        <dt>Terrain</dt>
         <dd>{meta.fontes.relevo?.dado ?? '—'}</dd>
       </dl>
       <label class="check">
         <input type="checkbox" bind:checked={relief} onchange={onrelief} />
-        Usar relevo real
+        Use real terrain
       </label>
       <label class="check">
         <input type="checkbox" bind:checked={showFuel} />
-        Mostrar combustível no mapa
+        Show fuel on map
       </label>
       {#if showFuel}
         <ul class="legend">
           {#each Object.entries(FUEL_STYLE) as [index, f] (index)}
             <li><span style:background={`rgb(${f.rgb.join(',')})`}></span>{f.label}</li>
           {/each}
-          <li class="note">transparente: sem combustível (barreira)</li>
+          <li class="note">transparent: no fuel (barrier)</li>
         </ul>
       {/if}
     {:else}
-      <p class="note">Nenhuma paisagem aberta.</p>
+      <p class="note">No landscape open.</p>
     {/if}
   </section>
 
   <section>
-    <h2>Ignição</h2>
+    <h2>Ignition</h2>
     <div class="ignition">
       <svg
         width="18"
@@ -105,25 +114,25 @@
       </svg>
       <span class="mono">{ignitionLabel}</span>
     </div>
-    <p class="note">Clique no mapa pra mudar o ponto.</p>
+    <p class="note">Click the map to move it.</p>
   </section>
 
   <section>
-    <h2>Vento</h2>
+    <h2>Wind</h2>
     <div class="wind">
       <svg
         width="96"
         height="96"
         viewBox="0 0 100 100"
         role="img"
-        aria-label={`Vento de ${fromName}`}
+        aria-label={`Wind from the ${fromName}`}
       >
         <circle cx="50" cy="50" r="44" fill="var(--surface-2)" stroke="#3a342e" />
         <circle cx="50" cy="50" r="28" fill="none" stroke="var(--border)" />
         <text x="50" y="14">N</text>
-        <text x="90" y="53">L</text>
+        <text x="90" y="53">E</text>
         <text x="50" y="94">S</text>
-        <text x="10" y="53">O</text>
+        <text x="10" y="53">W</text>
         <line
           x1={arrow.tail[0]}
           y1={arrow.tail[1]}
@@ -140,31 +149,31 @@
         />
       </svg>
       <div class="wind-read">
-        <span class="mono big">{windSpeed.toLocaleString('pt-BR')} <small>m/s</small></span>
-        <span class="note">de {fromName} · {windFrom}°</span>
+        <span class="mono big">{windSpeed.toLocaleString('en-US')} <small>m/s</small></span>
+        <span class="note">from the {fromName} · {windFrom}°</span>
       </div>
     </div>
     <label>
-      Velocidade
+      Speed
       <input type="range" min="0" max="15" step="0.5" bind:value={windSpeed} />
     </label>
     <label>
-      Direção (de onde vem)
+      Direction (blowing from)
       <input type="range" min="0" max="359" step="1" bind:value={windFrom} />
     </label>
   </section>
 
   <section>
-    <h2>Simulação</h2>
-    <p class="note">Duração: 1 h, em passos de 30 s.</p>
+    <h2>Simulation</h2>
+    <p class="note">Duration: 1 h, in 30 s steps.</p>
     <button class="run" onclick={onrun} disabled={running || !canRun}>
       {#if running}
-        Simulando… {progress}
+        Simulating… {progress}
       {:else}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
           ><path d="M6 4l14 8-14 8z" /></svg
         >
-        Rodar simulação
+        Run simulation
       {/if}
     </button>
     {#if error}<p class="error">{error}</p>{/if}

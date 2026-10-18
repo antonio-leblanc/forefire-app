@@ -28,7 +28,7 @@ export function fromRaw(raw: RawPack): Pack {
   const fuel = new Int32Array(bytes(raw.fuel))
   const altitude = new Float64Array(bytes(raw.altitude))
   if (fuel.length !== nx * ny || altitude.length !== nx * ny) {
-    throw new Error(`pacote ${meta.nome}: grade ${nx}x${ny} não bate com os .bin`)
+    throw new Error(`package ${meta.nome}: ${nx}x${ny} grid does not match the .bin files`)
   }
   return {
     meta,

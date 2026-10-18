@@ -8,11 +8,11 @@
   let { timeline, current }: Props = $props()
 
   const OUTCOME: Record<string, string> = {
-    'step-limit': 'ainda queimando',
-    'burnt-out': 'apagou',
-    'left-domain': 'saiu da área',
-    stalled: 'parou de crescer',
-    'never-caught': 'não pegou'
+    'step-limit': 'still burning',
+    'burnt-out': 'burnt out',
+    'left-domain': 'left the domain',
+    stalled: 'stopped growing',
+    'never-caught': 'did not catch'
   }
 
   const frame = $derived(timeline.frames[current])
@@ -20,13 +20,13 @@
 
 <div class="stats">
   <div>
-    <span class="label">Área queimada</span>
+    <span class="label">Burned area</span>
     <span class="value mono"
-      >{((frame?.area ?? 0) / 10000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ha</span
+      >{((frame?.area ?? 0) / 10000).toLocaleString('en-US', { maximumFractionDigits: 1 })} ha</span
     >
   </div>
   <div>
-    <span class="label">Situação</span>
+    <span class="label">Status</span>
     <span class="value small">{OUTCOME[timeline.outcome] ?? timeline.outcome}</span>
   </div>
   <div>

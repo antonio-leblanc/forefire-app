@@ -11,7 +11,7 @@
   <span>{sources.join(' · ')}</span>
   <span class="grow"></span>
   {#if hasPack}
-    <span>Combustível aproximado a partir de cobertura do solo</span>
+    <span>Fuel approximated from land cover</span>
   {/if}
 </footer>
 
