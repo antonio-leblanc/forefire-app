@@ -1,3 +1,23 @@
+/* Tema do app (SPEC §7.2): moldura escura e quente, mapa claro, destaque no
+   laranja da chama do logo. */
+:root {
+  --bg: #14110f;
+  --surface: #1c1916;
+  --surface-2: #24201c;
+  --border: #2e2925;
+  --text: #ede6df;
+  --text-2: #b8aea4;
+  --muted: #a39a91;
+  --accent: #e8682c;
+  --accent-text: #f08a4b;
+  --on-accent: #1a0d05;
+  --danger: #ff8a80;
+
+  --font: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --radius: 6px;
+}
+
 html,
 body,
 #app {
@@ -6,7 +26,26 @@ body,
 }
 
 body {
-  font-family: system-ui, sans-serif;
-  background: #1b1b1b;
-  color: #eee;
+  font-family: var(--font);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  accent-color: var(--accent);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+a {
+  color: var(--accent-text);
 }

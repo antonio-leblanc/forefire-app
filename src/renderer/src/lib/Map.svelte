@@ -20,15 +20,13 @@
     /** Combustível (data URL), esticado sobre o domínio. */
     fuelImage: string
     showFuel: boolean
-    /** Fontes dos dados da paisagem, no rodapé do mapa. */
-    attribution: string
     ignition: [number, number]
     frames: Frame[]
     /** Frame mostrado como frente atual. */
     current: number
     onignite: (xy: [number, number]) => void
   }
-  let { domain, fuelImage, showFuel, attribution, ignition, frames, current, onignite }: Props = $props()
+  let { domain, fuelImage, showFuel, ignition, frames, current, onignite }: Props = $props()
 
   let container: HTMLDivElement
   let map: maplibregl.Map | null = $state(null)
@@ -40,7 +38,11 @@
       const coords: [number, number][] = []
       for (let i = 0; i < poly.length; i += 2) coords.push(toLngLat(domain, poly[i], poly[i + 1]))
       coords.push(coords[0])
-      return { type: 'Feature', properties: { t: f.t }, geometry: { type: 'LineString', coordinates: coords } }
+      return {
+        type: 'Feature',
+        properties: { t: f.t },
+        geometry: { type: 'LineString', coordinates: coords }
+      }
     })
   }
 
@@ -50,20 +52,27 @@
       style: STYLE,
       center: toLngLat(domain, domain.side / 2, domain.side / 2),
       zoom: 13,
-      attributionControl: { customAttribution: attribution }
+      // As fontes da paisagem ficam na barra de status; aqui só a do basemap.
+      attributionControl: { compact: true }
     })
     m.addControl(new maplibregl.NavigationControl(), 'top-right')
     m.addControl(new maplibregl.ScaleControl({ unit: 'metric' }))
 
     m.on('load', () => {
-      for (const id of ['domain', 'isochrones', 'front', 'ignition']) m.addSource(id, { type: 'geojson', data: empty })
+      for (const id of ['domain', 'isochrones', 'front', 'ignition'])
+        m.addSource(id, { type: 'geojson', data: empty })
 
       const S = domain.side
       m.addSource('fuel', {
         type: 'image',
         url: fuelImage,
         // Cantos na ordem do Maplibre: noroeste, nordeste, sudeste, sudoeste.
-        coordinates: [toLngLat(domain, 0, S), toLngLat(domain, S, S), toLngLat(domain, S, 0), toLngLat(domain, 0, 0)]
+        coordinates: [
+          toLngLat(domain, 0, S),
+          toLngLat(domain, S, S),
+          toLngLat(domain, S, 0),
+          toLngLat(domain, 0, 0)
+        ]
       })
       m.addLayer({
         id: 'fuel',
@@ -87,10 +96,25 @@
           'line-width': 1.5,
           'line-opacity': 0.8,
           // Amarelo (começo) → vermelho escuro (1 h), por tempo simulado em segundos.
-          'line-color': ['interpolate', ['linear'], ['get', 't'], 0, '#ffd54f', 1800, '#f4511e', 3600, '#7f0000']
+          'line-color': [
+            'interpolate',
+            ['linear'],
+            ['get', 't'],
+            0,
+            '#ffd54f',
+            1800,
+            '#f4511e',
+            3600,
+            '#7f0000'
+          ]
         }
       })
-      m.addLayer({ id: 'front', type: 'line', source: 'front', paint: { 'line-color': '#d50000', 'line-width': 3 } })
+      m.addLayer({
+        id: 'front',
+        type: 'line',
+        source: 'front',
+        paint: { 'line-color': '#d50000', 'line-width': 3 }
+      })
       m.addLayer({
         id: 'ignition',
         type: 'circle',
