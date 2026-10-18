@@ -35,7 +35,7 @@
     if (!raw) return
     try {
       const p = fromRaw(raw)
-      fuelImage = renderFuel(p.landscape)
+      fuelImage = renderFuel(p.landscape, p.meta.legenda ?? {})
       hillshadeImage = renderHillshade(p.landscape)
       ignition = [p.meta.lado / 2, p.meta.lado / 2]
       timeline = null

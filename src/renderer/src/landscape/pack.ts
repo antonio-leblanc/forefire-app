@@ -11,7 +11,11 @@ export interface PackMeta {
   mapeamento: string
   fuelPadrao: number
   fontes: Record<string, { dado: string; licenca?: string; url: string[] }>
+  /** Combustíveis que queimam na área, por índice da fuelsTable. Pacote antigo não tem. */
+  legenda?: Legend
 }
+
+export type Legend = Record<number, { nome: string; rgb: [number, number, number]; profundidade: number }>
 
 export interface Pack {
   meta: PackMeta

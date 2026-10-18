@@ -22,23 +22,48 @@ from rasterio.transform import from_origin
 LADO_PADRAO = 5000  # metros
 CELULA_PADRAO = 20  # metros
 
-# Mapeamento provisório (PLAN passo 1): só separa o que queima do que não queima,
-# com duas linhas do fuels.csv. O mapeamento de verdade é o passo 4.
-MAPEAMENTO_VERSAO = "provisorio-0"
+# Cada classe do WorldCover vai pra classe S2GLC equivalente; o fuels.csv é a
+# tabela do ForeFire indexada pelo código S2GLC. Justificativa em MAPEAMENTO.md.
+MAPEAMENTO_VERSAO = "worldcover-s2glc-1"
 WORLDCOVER_PARA_FUEL = {
-    10: 5,  # árvores
-    20: 5,  # arbustos
-    30: 4,  # campo
-    40: 4,  # cultivo
-    50: 0,  # construído
-    60: 0,  # solo exposto / vegetação esparsa
-    70: 0,  # neve e gelo
-    80: 0,  # água
-    90: 4,  # área úmida herbácea
-    95: 5,  # mangue
-    100: 4,  # musgo e líquen
+    10: 82,  # árvores → folhosa
+    20: 104,  # arbustos → vegetação esclerófila
+    30: 102,  # campo → vegetação herbácea
+    40: 73,  # cultivo → área cultivada
+    50: 62,  # construído → superfície artificial
+    60: 121,  # solo exposto / vegetação esparsa → material natural
+    70: 123,  # neve e gelo → neve permanente
+    80: 162,  # água → corpo d'água
+    90: 105,  # área úmida herbácea → pântano
+    95: 105,  # mangue → pântano
+    100: 106,  # musgo e líquen → turfeira
 }
 SEM_COMBUSTIVEL = 0
+
+# Nome e cor de cada classe S2GLC, da paleta do próprio ForeFire (tools/makeColormapH.py).
+S2GLC = {
+    62: ("artificial surfaces", (210, 0, 0)),
+    73: ("cultivated areas", (253, 211, 39)),
+    75: ("vineyards", (176, 91, 16)),
+    82: ("broadleaf tree cover", (35, 152, 0)),
+    83: ("coniferous tree cover", (8, 98, 0)),
+    102: ("herbaceous vegetation", (249, 150, 39)),
+    103: ("moors and heathland", (141, 139, 0)),
+    104: ("sclerophyllous vegetation", (95, 53, 6)),
+    105: ("marshes", (149, 107, 196)),
+    106: ("peatbogs", (77, 37, 106)),
+    121: ("natural material surfaces", (154, 154, 154)),
+    123: ("permanent snow", (106, 255, 255)),
+    162: ("water bodies", (20, 69, 249)),
+}
+
+
+def profundidades(fuels_csv: Path) -> dict[int, float]:
+    """Profundidade do leito (coluna `e`, m) por índice; zero é barreira."""
+    linhas = fuels_csv.read_text().split()
+    cab = linhas[0].split(";")
+    i_idx, i_e = cab.index("Index"), cab.index("e")
+    return {int(c[i_idx]): float(c[i_e]) for c in (l.split(";") for l in linhas[1:])}
 
 # Mesma conversão do app (src/renderer/src/landscape/geo.ts).
 M_POR_GRAU_LAT = 111320
@@ -158,6 +183,13 @@ def main() -> None:
     shutil.copy(Path(__file__).parent / "fuels.csv", saida / "fuels.csv")
 
     contagem = {int(c): int((classes == c).sum()) for c in np.unique(classes)}
+    # Legenda só do que queima e aparece na área; barreira fica transparente no mapa.
+    e = profundidades(Path(__file__).parent / "fuels.csv")
+    legenda = {
+        int(i): {"nome": S2GLC[int(i)][0], "rgb": list(S2GLC[int(i)][1]), "profundidade": e[int(i)]}
+        for i in np.unique(fuel)
+        if e.get(int(i), 0) > 0
+    }
     meta = {
         "nome": nome,
         "centro": list(centro),
@@ -172,6 +204,7 @@ def main() -> None:
             "relevo": {"dado": "Copernicus DEM GLO-30", "url": urls_dem},
         },
         "classesWorldCover": contagem,
+        "legenda": legenda,
     }
     (saida / "meta.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
 

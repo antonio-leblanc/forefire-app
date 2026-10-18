@@ -31,11 +31,12 @@ Vem antes do resto do M2: hillshade, legenda e aviso de aproximação já nascem
 
 **Pronto quando:** o app faz exatamente o que faz hoje, com a cara do SPEC §7, e aparece com o logo na barra de tarefas.
 
-## 4. Mapeamento próprio
-- [ ] Estudar as classes do WorldCover e as colunas do Rothermel no `fuels.csv` (o que `sd`, `Md`, `Sigmad`, `e` significam)
-- [ ] Escolher uma linha (ou criar uma, a partir da literatura) pra cada classe
-- [ ] `pipeline/MAPEAMENTO.md`: classe → combustível, com a justificativa e a fonte de cada escolha
-- [ ] Versão do mapeamento no `meta.json`
+## 4. Mapeamento WorldCover → S2GLC
+- [x] `fuels.csv` vira a tabela S2GLC do ForeFire (SPEC §5.3)
+- [x] Cada classe do WorldCover → classe S2GLC, em `pipeline/MAPEAMENTO.md`, com o porquê
+- [x] Versão do mapeamento e legenda (nome, cor da paleta do ForeFire, profundidade) no `meta.json`; o app desenha a partir dela
+- [ ] Estudar as colunas do Rothermel (o que `sd`, `Md`, `Sigmad`, `e` significam) e fechar as escolhas em aberto do `MAPEAMENTO.md`
+- [ ] Conferir no app: Alto Paraíso e Córsega
 
 **Pronto quando:** cada classe tem combustível justificado, e o fogo se comporta como o mapeamento diz que deveria (corre mais rápido no campo do que na floresta, por exemplo).
 

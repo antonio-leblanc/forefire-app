@@ -1,7 +1,6 @@
 <script lang="ts">
   import { type Domain, toLngLat } from '../landscape/geo'
   import type { PackMeta } from '../landscape/pack'
-  import { FUEL_STYLE } from '../landscape/render'
 
   interface Props {
     meta: PackMeta | null
@@ -109,8 +108,11 @@
       </label>
       {#if showFuel}
         <ul class="legend">
-          {#each Object.entries(FUEL_STYLE) as [index, f] (index)}
-            <li><span style:background={`rgb(${f.rgb.join(',')})`}></span>{f.label}</li>
+          {#each Object.entries(meta.legenda ?? {}) as [index, f] (index)}
+            <li>
+              <span style:background={`rgb(${f.rgb.join(',')})`}></span>{f.nome}
+              <em class="mono">{f.profundidade} m</em>
+            </li>
           {/each}
           <li class="note">transparent: no fuel (barrier)</li>
         </ul>
@@ -300,8 +302,19 @@
     font-size: 12px;
     color: var(--text-2);
   }
+  .legend li {
+    display: flex;
+    align-items: center;
+  }
+  .legend em {
+    margin-left: auto;
+    font-style: normal;
+    font-size: 11px;
+    color: var(--muted);
+  }
   .legend span {
     display: inline-block;
+    flex-shrink: 0;
     width: 8px;
     height: 8px;
     margin-right: 8px;

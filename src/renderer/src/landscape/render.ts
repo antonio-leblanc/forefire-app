@@ -1,14 +1,9 @@
 // Camadas da paisagem desenhadas sobre o mapa: combustível e sombreamento do
 // relevo. O que não tem nada a mostrar fica transparente, pra o basemap aparecer.
 import type { Landscape } from '../engine/types'
+import type { Legend } from './pack'
 
-/** Cor e nome de cada linha do fuels.csv do pipeline. */
-export const FUEL_STYLE: Record<number, { label: string; rgb: [number, number, number] }> = {
-  5: { label: 'shrub / forest (0.6 m)', rgb: [67, 140, 80] },
-  4: { label: 'grass / cropland (0.19 m)', rgb: [214, 190, 92] }
-}
-
-export function renderFuel(land: Landscape & { fuel: Int32Array }): string {
+export function renderFuel(land: Landscape & { fuel: Int32Array }, legend: Legend): string {
   const { nx, ny, fuel } = land
   const canvas = document.createElement('canvas')
   canvas.width = nx
@@ -18,7 +13,7 @@ export function renderFuel(land: Landscape & { fuel: Int32Array }): string {
 
   for (let j = 0; j < ny; j++) {
     for (let i = 0; i < nx; i++) {
-      const style = FUEL_STYLE[fuel[j * nx + i]]
+      const style = legend[fuel[j * nx + i]]
       if (!style) continue
       // Linha 0 da grade é o sul; linha 0 da imagem é o topo (norte).
       const p = ((ny - 1 - j) * nx + i) * 4

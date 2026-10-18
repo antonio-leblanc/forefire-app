@@ -98,7 +98,7 @@ O que a paisagem precisa ser pra entrar no ForeFire, conferido no binding e na d
 - **Altitude:** `Float64Array` em metros, via `addScalarLayer("data","altitude",...)`, **registrada antes do modelo de propagação**, senão o declive fica zero pra sempre.
 - **Vento:** uniforme na área, por camadas `windU`/`windV` + `trigger[wind;...]`. Não há campo de vento variável no M1/M2.
 - **Umidade e temperatura não são layers:** `Md`, `Ml` e `Ta` são colunas da `fuelsTable`. Mudar umidade = mudar a linha do combustível.
-- **`fuelsTable`:** CSV com separador `;`. O Rothermel pede 23 colunas por combustível (`Index;Rhod;Rhol;Md;Ml;sd;sl;e;Sigmad;Sigmal;stoch;RhoA;Ta;Tau0;Deltah;DeltaH;Cp;Cpa;Ti;X0;r00;Blai;me`). Fonte das linhas: `tests/runff/fuels.csv` do próprio repo do ForeFire. Combustível com profundidade zero funciona como barreira.
+- **`fuelsTable`:** CSV com separador `;`. O Rothermel pede 23 colunas por combustível (`Index;Rhod;Rhol;Md;Ml;sd;sl;e;Sigmad;Sigmal;stoch;RhoA;Ta;Tau0;Deltah;DeltaH;Cp;Cpa;Ti;X0;r00;Blai;me`). Fonte das linhas: a tabela S2GLC do próprio repo do ForeFire (§5.3). Combustível com profundidade zero funciona como barreira.
 
 ---
 
@@ -132,7 +132,8 @@ Uma pasta autocontida, já no formato que o motor espera (§4):
 - O `fuels.csv` vai junto porque o pacote não pode quebrar se o mapeamento mudar depois.
 
 ### 5.3 Mapeamento WorldCover → combustível
-- **Próprio**, feito a partir das classes públicas do WorldCover e da literatura, com cada escolha justificada em `pipeline/MAPEAMENTO.md`. É a parte de estudo de física do M2.
+- **Global, por classe do WorldCover**, sem regionalização: o app abre paisagem de qualquer lugar do mundo.
+- **Física do ForeFire, correspondência própria.** Os parâmetros do Rothermel vêm sem alteração da tabela que o ForeFire usa pro S2GLC (`tools/3nestFFCASE/006_runff/ForeFire/fuels.ff`, indexada pelo código de pixel do S2GLC). A parte deste repo é levar cada classe do WorldCover à classe S2GLC equivalente, com a justificativa em `pipeline/MAPEAMENTO.md`. O app consome a física, não decide.
 - Toda escolha é uma **aproximação explícita**: uma classe de cobertura do solo não é um modelo de combustível. Isso fica escrito no `MAPEAMENTO.md` e aparece na UI.
 - Classes sem combustível (água, área construída, neve, solo exposto) viram barreira (§4: profundidade zero).
 
