@@ -19,11 +19,13 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md); 
 **Pronto quando:** `npm run dev` abre uma janela com mapa.
 
 ## 3. Motor no worker
-- [ ] Portar `worker.mjs` da demo (`feat/wasm-on-dev`) pra `src/renderer/src/engine/worker.ts`
-- [ ] Module novo a cada simulação
-- [ ] Mensagens: `run { landscape, ignition, wind, duration }` → `frames { t, fronts, area }[]`
+- [x] Portar `worker.mjs` da demo (`feat/wasm-on-dev`) pra `src/renderer/src/engine/worker.ts`
+- [x] Module novo a cada simulação (reaproveitando o `WebAssembly.Module` compilado)
+- [x] Mensagens: `run { landscape, ignition, wind, steps, dt }` → `timeline { frames, outcome }` (`engine/types.ts`)
 
-**Pronto quando:** um botão roda uma simulação em terreno plano e o console mostra a área queimada.
+**Pronto quando:** um botão roda uma simulação em terreno plano e mostra a área queimada.
+
+**Pendente pro build de produção:** com `loadFile` o motor viria de `file://`, e o `fetch` do `.wasm` não funciona assim. Resolver com um protocolo próprio (`app://`) no main antes do M5.
 
 ## 4. Paisagem sintética
 - [ ] Gerador: colina gaussiana + manchas de combustível (linhas 0, 4 e 5 do `fuels.csv`)
@@ -33,15 +35,15 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md); 
 **Pronto quando:** a paisagem aparece no mapa no lugar certo.
 
 ## 5. Simulação no mapa
-- [ ] Clique no mapa → ponto de ignição em metros
-- [ ] Controles de vento (velocidade, direção) e duração
-- [ ] Frentes convertidas de metros pra lat/lon e desenhadas, coloridas por tempo (isócronas)
-- [ ] Área queimada na tela
+- [x] Clique no mapa → ponto de ignição em metros
+- [x] Controles de vento (velocidade, direção); duração fixa em 1 h
+- [x] Frentes convertidas de metros pra lat/lon e desenhadas, coloridas por tempo (isócronas)
+- [x] Área queimada na tela
 
 **Pronto quando:** o fogo sobe a colina mais rápido do que desce.
 
 ## 6. Timeline
-- [ ] Slider sobre os frames já calculados
+- [x] Slider sobre os frames já calculados
 - [ ] Play/pause
 
 **Pronto quando:** dá pra voltar e avançar o fogo sem rodar o solver de novo.
