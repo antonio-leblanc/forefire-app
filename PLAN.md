@@ -5,7 +5,7 @@ Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md) (
 ## 1. Pipeline: primeiro pacote
 - [x] Projeto `uv` em `pipeline/` (`rasterio`, `numpy`)
 - [x] Área de desenvolvimento: 5 km em Alto Paraíso de Goiás (Chapada dos Veadeiros), com mata, arbusto, campo, cultivo, cidade e um pouco de água
-- [x] Script com centro e lado no topo do arquivo: lê só a janela necessária do COG do WorldCover no S3
+- [x] Script com centro e lado na linha de comando (`--lat --lon --lado`), em qualquer lugar do mundo: lê só a janela necessária dos COGs no S3, emendando tiles quando a área cruza a borda de um
 - [x] Grade com a mesma conversão do `landscape/geo.ts`; amostra por vizinho mais próximo; célula de 20 m (como no M1), e só desce pra 10 m depois de medir o tempo do solver
 - [x] Mapeamento provisório: mata/arbusto → linha 5, campo/cultivo → linha 4, o resto → barreira
 - [x] Escreve o pacote (§5.2) numa pasta ignorada pelo git, mais um GeoTIFF de inspeção

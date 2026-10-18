@@ -1,10 +1,12 @@
 """Gera um pacote de paisagem (SPEC §5.2) a partir do ESA WorldCover e do Copernicus DEM.
 
-    uv run build.py
+    uv run build.py --lat -14.14 --lon -47.53 --nome alto-paraiso
+    uv run build.py --lat 42.15 --lon 9.10 --lado 8000
 
-Área e resolução ficam nas constantes abaixo. O pacote sai em out/<NOME>/.
+Qualquer lugar do mundo; a área pode cruzar tiles. O pacote sai em out/<nome>/.
 """
 
+import argparse
 import json
 import math
 import shutil
@@ -13,13 +15,12 @@ from pathlib import Path
 
 import numpy as np
 import rasterio
+from rasterio.errors import RasterioIOError
+from rasterio.merge import merge
 from rasterio.transform import from_origin
-from rasterio.windows import from_bounds
 
-NOME = "alto-paraiso"
-CENTRO = (-47.53, -14.14)  # lon, lat: Alto Paraíso de Goiás, Chapada dos Veadeiros
-LADO = 5000  # metros
-CELULA = 20  # metros
+LADO_PADRAO = 5000  # metros
+CELULA_PADRAO = 20  # metros
 
 # Mapeamento provisório (PLAN passo 1): só separa o que queima do que não queima,
 # com duas linhas do fuels.csv. O mapeamento de verdade é o passo 4.
@@ -52,31 +53,52 @@ def canto_sudoeste(centro: tuple[float, float], lado: float) -> tuple[float, flo
     return lon - lado / 2 / m_por_grau_lon(lat), lat - lado / 2 / M_POR_GRAU_LAT
 
 
-def tile_worldcover(lon: float, lat: float) -> str:
+def cantos_de_tiles(lons: np.ndarray, lats: np.ndarray, passo: int) -> list[tuple[int, int]]:
+    """Canto sudoeste (lat, lon) de cada tile de `passo` graus que a área toca."""
+    la0, la1 = math.floor(lats.min() / passo) * passo, math.floor(lats.max() / passo) * passo
+    lo0, lo1 = math.floor(lons.min() / passo) * passo, math.floor(lons.max() / passo) * passo
+    return [(la, lo) for la in range(la0, la1 + 1, passo) for lo in range(lo0, lo1 + 1, passo)]
+
+
+def tiles_worldcover(lons: np.ndarray, lats: np.ndarray) -> list[str]:
     # Tiles de 3°, nomeados pelo canto sudoeste.
-    la, lo = math.floor(lat / 3) * 3, math.floor(lon / 3) * 3
-    nome = f"{'N' if la >= 0 else 'S'}{abs(la):02d}{'E' if lo >= 0 else 'W'}{abs(lo):03d}"
-    return f"https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_{nome}_Map.tif"
+    urls = []
+    for la, lo in cantos_de_tiles(lons, lats, 3):
+        nome = f"{'N' if la >= 0 else 'S'}{abs(la):02d}{'E' if lo >= 0 else 'W'}{abs(lo):03d}"
+        urls.append(f"https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_{nome}_Map.tif")
+    return urls
 
 
-def tile_dem(lon: float, lat: float) -> str:
+def tiles_dem(lons: np.ndarray, lats: np.ndarray) -> list[str]:
     # Tiles de 1°, nomeados pelo canto sudoeste.
-    la, lo = math.floor(lat), math.floor(lon)
-    nome = f"Copernicus_DSM_COG_10_{'N' if la >= 0 else 'S'}{abs(la):02d}_00_{'E' if lo >= 0 else 'W'}{abs(lo):03d}_00_DEM"
-    return f"https://copernicus-dem-30m.s3.amazonaws.com/{nome}/{nome}.tif"
+    urls = []
+    for la, lo in cantos_de_tiles(lons, lats, 1):
+        nome = f"Copernicus_DSM_COG_10_{'N' if la >= 0 else 'S'}{abs(la):02d}_00_{'E' if lo >= 0 else 'W'}{abs(lo):03d}_00_DEM"
+        urls.append(f"https://copernicus-dem-30m.s3.amazonaws.com/{nome}/{nome}.tif")
+    return urls
 
 
-def ler_janela(url: str, lons: np.ndarray, lats: np.ndarray) -> tuple[np.ndarray, rasterio.Affine]:
-    """Lê do COG só o retângulo que cobre os pontos, com uma margem de 2 pixels."""
-    with rasterio.open(url) as src:
-        b = src.bounds
-        assert b.left <= lons.min() and lons.max() <= b.right and b.bottom <= lats.min() and lats.max() <= b.top, (
-            f"área fora do tile {url}: área em mais de um tile ainda não é suportada"
-        )
-        dx, dy = src.res
-        win = from_bounds(lons.min() - 2 * dx, lats.min() - 2 * dy, lons.max() + 2 * dx, lats.max() + 2 * dy, src.transform)
-        win = win.round_offsets().round_lengths()
-        return src.read(1, window=win), src.window_transform(win)
+def ler_mosaico(urls: list[str], lons: np.ndarray, lats: np.ndarray, vazio: float) -> tuple[np.ndarray, rasterio.Affine, list[str]]:
+    """Lê dos COGs só o retângulo que cobre os pontos, com margem de 2 pixels, emendando os tiles.
+
+    Tile inexistente (mar aberto, nos dois datasets) é pulado; o buraco sai com `vazio`.
+    """
+    fontes = []
+    for url in urls:
+        try:
+            fontes.append(rasterio.open(url))
+        except RasterioIOError:
+            print(f"  sem tile (mar?): {url}")
+    if not fontes:
+        raise SystemExit("nenhum tile com dado nessa área")
+    try:
+        dx, dy = fontes[0].res
+        limites = (lons.min() - 2 * dx, lats.min() - 2 * dy, lons.max() + 2 * dx, lats.max() + 2 * dy)
+        dados, t = merge(fontes, bounds=limites, nodata=vazio)
+        return dados[0], t, [f.name for f in fontes]
+    finally:
+        for f in fontes:
+            f.close()
 
 
 def amostrar_vizinho(dados: np.ndarray, t: rasterio.Affine, lons: np.ndarray, lats: np.ndarray) -> np.ndarray:
@@ -97,28 +119,39 @@ def amostrar_bilinear(dados: np.ndarray, t: rasterio.Affine, lons: np.ndarray, l
 
 
 def main() -> None:
-    n = LADO // CELULA
-    sw_lon, sw_lat = canto_sudoeste(CENTRO, LADO)
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--lat", type=float, required=True, help="latitude do centro, graus decimais")
+    p.add_argument("--lon", type=float, required=True, help="longitude do centro, graus decimais")
+    p.add_argument("--lado", type=int, default=LADO_PADRAO, help=f"lado do quadrado, m (padrão {LADO_PADRAO})")
+    p.add_argument("--celula", type=int, default=CELULA_PADRAO, help=f"tamanho da célula, m (padrão {CELULA_PADRAO})")
+    p.add_argument("--nome", help="nome do pacote (padrão: lat_lon)")
+    a = p.parse_args()
+
+    centro = (a.lon, a.lat)
+    nome = a.nome or f"{a.lat:.3f}_{a.lon:.3f}"
+    lado, celula = a.lado, a.celula
+    n = lado // celula
+    sw_lon, sw_lat = canto_sudoeste(centro, lado)
 
     # Centro de cada célula, em ordem C (y, x), linha 0 = sul (SPEC §4).
-    xy = (np.arange(n) + 0.5) * CELULA
+    xy = (np.arange(n) + 0.5) * celula
     lons = sw_lon + xy[np.newaxis, :] / m_por_grau_lon(sw_lat) + 0 * xy[:, np.newaxis]
     lats = sw_lat + xy[:, np.newaxis] / M_POR_GRAU_LAT + 0 * xy[np.newaxis, :]
 
-    url_wc = tile_worldcover(*CENTRO)
-    print(f"WorldCover: {url_wc}")
-    wc, t_wc = ler_janela(url_wc, lons, lats)
+    print("WorldCover:")
+    # 0 é o nodata do WorldCover: sem classe, vira barreira.
+    wc, t_wc, urls_wc = ler_mosaico(tiles_worldcover(lons, lats), lons, lats, vazio=0)
     classes = amostrar_vizinho(wc, t_wc, lons, lats)
     fuel = np.full(classes.shape, SEM_COMBUSTIVEL, dtype="<i4")
     for classe, indice in WORLDCOVER_PARA_FUEL.items():
         fuel[classes == classe] = indice
 
-    url_dem = tile_dem(*CENTRO)
-    print(f"Copernicus DEM: {url_dem}")
-    dem, t_dem = ler_janela(url_dem, lons, lats)
+    print("Copernicus DEM:")
+    # Sem tile de DEM é mar: altitude zero.
+    dem, t_dem, urls_dem = ler_mosaico(tiles_dem(lons, lats), lons, lats, vazio=0)
     altitude = amostrar_bilinear(dem, t_dem, lons, lats).astype("<f8")
 
-    saida = Path(__file__).parent / "out" / NOME
+    saida = Path(__file__).parent / "out" / nome
     saida.mkdir(parents=True, exist_ok=True)
     fuel.tofile(saida / "fuel.bin")
     altitude.tofile(saida / "altitude.bin")
@@ -126,17 +159,17 @@ def main() -> None:
 
     contagem = {int(c): int((classes == c).sum()) for c in np.unique(classes)}
     meta = {
-        "nome": NOME,
-        "centro": list(CENTRO),
-        "lado": LADO,
+        "nome": nome,
+        "centro": list(centro),
+        "lado": lado,
         "nx": n,
         "ny": n,
         "mapeamento": MAPEAMENTO_VERSAO,
         "fuelPadrao": SEM_COMBUSTIVEL,
         "gerado": date.today().isoformat(),
         "fontes": {
-            "combustivel": {"dado": "ESA WorldCover 10m 2021 v200", "licenca": "CC-BY 4.0", "url": url_wc},
-            "relevo": {"dado": "Copernicus DEM GLO-30", "url": url_dem},
+            "combustivel": {"dado": "ESA WorldCover 10m 2021 v200", "licenca": "CC-BY 4.0", "url": urls_wc},
+            "relevo": {"dado": "Copernicus DEM GLO-30", "url": urls_dem},
         },
         "classesWorldCover": contagem,
     }
@@ -144,7 +177,7 @@ def main() -> None:
 
     # GeoTIFF de inspeção em EPSG:4326. A grade é linear em lon/lat (mesma
     # aproximação do app), então a transformação afim é exata. Linha 0 do GeoTIFF = norte.
-    t = from_origin(sw_lon, sw_lat + LADO / M_POR_GRAU_LAT, CELULA / m_por_grau_lon(sw_lat), CELULA / M_POR_GRAU_LAT)
+    t = from_origin(sw_lon, sw_lat + lado / M_POR_GRAU_LAT, celula / m_por_grau_lon(sw_lat), celula / M_POR_GRAU_LAT)
     perfil = dict(driver="GTiff", width=n, height=n, crs="EPSG:4326", transform=t)
     with rasterio.open(saida / "inspecao.tif", "w", count=3, dtype="float64", **perfil) as dst:
         dst.write(classes[::-1].astype("float64"), 1)
@@ -152,7 +185,7 @@ def main() -> None:
         dst.write(altitude[::-1], 3)
         dst.descriptions = ("classe WorldCover", "fuel", "altitude (m)")
 
-    print(f"Pacote em {saida}: {n}x{n} células de {CELULA} m")
+    print(f"Pacote em {saida}: {n}x{n} células de {celula} m")
     print(f"Classes WorldCover (células): {contagem}")
     print(f"Altitude: {altitude.min():.0f} a {altitude.max():.0f} m")
 

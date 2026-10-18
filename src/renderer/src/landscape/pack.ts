@@ -10,7 +10,7 @@ export interface PackMeta {
   ny: number
   mapeamento: string
   fuelPadrao: number
-  fontes: Record<string, { dado: string; licenca?: string; url: string }>
+  fontes: Record<string, { dado: string; licenca?: string; url: string[] }>
 }
 
 export interface Pack {
