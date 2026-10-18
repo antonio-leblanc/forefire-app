@@ -3,18 +3,18 @@
 Passo a passo do milestone atual. As decisões ficam no [`SPEC.md`](./SPEC.md); aqui fica só a execução. Cada passo termina com algo que dá pra ver rodando.
 
 ## 1. WASM buildado do fork
-- [ ] Clonar `antonio-leblanc/forefire` no WSL (`~/gitrepos/forefire`), branch `feat/wasm-binding`
-- [ ] Buildar com emsdk (`emcmake cmake -DFOREFIRE_ENABLE_NETCDF=OFF ...`) → `forefire.mjs` + `forefire.wasm`
-- [ ] Rodar o `bindings/wasm/smoke.mjs` e conferir que passa
-- [ ] Script `scripts/build-wasm.sh` no app, que faz isso e copia os artefatos pra `src/renderer/public/engine/`
-- [ ] Teste: duas simulações em dois Modules diferentes não vazam estado (#175)
+- [x] Clonar `antonio-leblanc/forefire` no WSL (`~/gitrepos/forefire`), branch `feat/wasm-binding`
+- [x] Buildar com emsdk (`emcmake cmake -DFOREFIRE_ENABLE_NETCDF=OFF ...`) → `forefire.mjs` + `forefire.wasm`
+- [x] Rodar o `bindings/wasm/smoke.mjs` e conferir que passa
+- [x] Script `scripts/build-wasm.sh` no app, que faz isso e copia os artefatos pra `src/renderer/public/engine/`
+- [x] Teste: duas simulações em dois Modules diferentes não vazam estado (#175)
 
 **Pronto quando:** o app tem um `.wasm` reproduzível a partir de um commit conhecido do fork.
 
 ## 2. Esqueleto do app
-- [ ] electron-vite + Svelte (template oficial)
-- [ ] `contextIsolation` ligado, sem `nodeIntegration`, preload mínimo
-- [ ] Janela com Maplibre em tela cheia
+- [x] electron-vite + Svelte (template oficial)
+- [x] `contextIsolation` ligado, sem `nodeIntegration`, preload mínimo
+- [x] Janela com Maplibre em tela cheia
 
 **Pronto quando:** `npm run dev` abre uma janela com mapa.
 
