@@ -71,10 +71,6 @@
       <dl>
         <dt>Grid</dt>
         <dd class="mono">{meta.nx} × {meta.ny} · {meta.lado / meta.nx} m</dd>
-        <dt>Fuel</dt>
-        <dd>{meta.fontes.combustivel?.dado ?? '—'}</dd>
-        <dt>Terrain</dt>
-        <dd>{meta.fontes.relevo?.dado ?? '—'}</dd>
       </dl>
       <label class="check">
         <input type="checkbox" bind:checked={relief} onchange={onrelief} />
@@ -121,8 +117,8 @@
     <h2>Wind</h2>
     <div class="wind">
       <svg
-        width="96"
-        height="96"
+        width="80"
+        height="80"
         viewBox="0 0 100 100"
         role="img"
         aria-label={`Wind from the ${fromName}`}
@@ -164,8 +160,7 @@
   </section>
 
   <section>
-    <h2>Simulation</h2>
-    <p class="note">Duration: 1 h, in 30 s steps.</p>
+    <h2>Simulation <span class="note">· 1 h, 30 s steps</span></h2>
     <button class="run" onclick={onrun} disabled={running || !canRun}>
       {#if running}
         Simulating… {progress}
@@ -189,11 +184,11 @@
     border-right: 1px solid var(--border);
   }
   section {
-    padding: 16px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
   section:last-child {
     border-bottom: 0;
@@ -205,6 +200,12 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--accent-text);
+  }
+  h2 .note {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
   }
   dl {
     display: grid;
@@ -230,7 +231,7 @@
     flex-direction: row;
     align-items: center;
     gap: 10px;
-    min-height: 28px;
+    min-height: 24px;
     font-size: 14px;
     color: var(--text);
     cursor: pointer;
@@ -278,7 +279,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px;
+    padding: 8px 10px;
     background: var(--surface-2);
     border-radius: var(--radius);
     font-size: 13px;
@@ -307,7 +308,7 @@
     color: var(--muted);
   }
   .run {
-    height: 44px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;

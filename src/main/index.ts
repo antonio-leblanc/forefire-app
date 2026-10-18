@@ -21,7 +21,11 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => mainWindow.show())
+  // App de mapa: abre ocupando a tela toda, sem sidebar com scroll em notebook.
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.maximize()
+    mainWindow.show()
+  })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
