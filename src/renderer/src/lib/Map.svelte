@@ -12,7 +12,8 @@
   // Basemap sem key e leve (pouco rótulo, sem prédio 3D): a paisagem é que é o
   // assunto. A escolha definitiva está em aberto (SPEC §11).
   const STYLE = 'https://tiles.openfreemap.org/styles/positron'
-  // Uma isócrona a cada tantos frames; a frente atual sai sempre.
+  // Uma isócrona a cada tantos frames (pelo menos 10, ~12 no run inteiro); a
+  // frente atual sai sempre.
   const ISO_EVERY = 10
 
   interface Props {
@@ -27,6 +28,8 @@
     frames: Frame[]
     /** Frame mostrado como frente atual. */
     current: number
+    /** Segundos simulados no run: a cor das isócronas vai de 0 a isso. */
+    duration: number
     onignite: (xy: [number, number]) => void
   }
   let {
@@ -38,6 +41,7 @@
     ignition,
     frames,
     current,
+    duration,
     onignite
   }: Props = $props()
 
@@ -53,7 +57,7 @@
       coords.push(coords[0])
       return {
         type: 'Feature',
-        properties: { t: f.t },
+        properties: { p: f.t / duration },
         geometry: { type: 'LineString', coordinates: coords }
       }
     })
@@ -113,16 +117,16 @@
         paint: {
           'line-width': 1.5,
           'line-opacity': 0.8,
-          // Amarelo (começo) → vermelho escuro (1 h), por tempo simulado em segundos.
+          // Amarelo (começo) → vermelho escuro (fim do run), pela fração do tempo simulado.
           'line-color': [
             'interpolate',
             ['linear'],
-            ['get', 't'],
+            ['get', 'p'],
             0,
             '#ffd54f',
-            1800,
+            0.5,
             '#f4511e',
-            3600,
+            1,
             '#7f0000'
           ]
         }
@@ -182,9 +186,12 @@
 
   $effect(() => {
     const shown = frames.slice(0, current + 1)
+    const last = frames.at(-1)
+    const steps = last && last.t > 0 ? Math.round((duration * last.step) / last.t) : 0
+    const every = Math.max(ISO_EVERY, Math.round(steps / 12))
     geo('isochrones')?.setData({
       type: 'FeatureCollection',
-      features: shown.filter((f) => f.step > 0 && f.step % ISO_EVERY === 0).flatMap(frontsToLines)
+      features: shown.filter((f) => f.step > 0 && f.step % every === 0).flatMap(frontsToLines)
     })
     const f = frames[current]
     geo('front')?.setData({ type: 'FeatureCollection', features: f ? frontsToLines(f) : [] })

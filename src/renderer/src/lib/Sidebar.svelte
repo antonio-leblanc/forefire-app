@@ -15,6 +15,8 @@
     showFuel: boolean
     windSpeed: number
     windFrom: number
+    /** Duração da simulação, em horas. */
+    hours: number
     onrelief: () => void
     onrun: () => void
     onopen: () => void
@@ -31,6 +33,7 @@
     showFuel = $bindable(),
     windSpeed = $bindable(),
     windFrom = $bindable(),
+    hours = $bindable(),
     onrelief,
     onrun,
     onopen
@@ -204,7 +207,18 @@
   </section>
 
   <section>
-    <h2>Simulation <span class="note">· 1 h, 30 s steps</span></h2>
+    <h2>Simulation <span class="note">· 30 s steps</span></h2>
+    <div class="hours" role="radiogroup" aria-label="Duration">
+      {#each [1, 2, 4, 6] as h (h)}
+        <button
+          role="radio"
+          aria-checked={hours === h}
+          class:active={hours === h}
+          disabled={running}
+          onclick={() => (hours = h)}>{h} h</button
+        >
+      {/each}
+    </div>
     <button class="run" onclick={onrun} disabled={running || !canRun}>
       {#if running}
         Simulating… {progress}
@@ -220,6 +234,32 @@
 </aside>
 
 <style>
+  .hours {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .hours button {
+    flex: 1;
+    height: 24px;
+    background: none;
+    border: 0;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .hours button:hover:not(:disabled) {
+    color: var(--text);
+  }
+  .hours button.active {
+    background: var(--surface-2);
+    color: var(--text);
+  }
   .open {
     display: flex;
     align-items: baseline;

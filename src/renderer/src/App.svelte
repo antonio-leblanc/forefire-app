@@ -32,6 +32,10 @@
   let running = $state(false)
   let progress = $state('')
   let mode = $state<Mode>('simulation')
+  /** Horas simuladas no próximo run, e as do run na tela (o mapa colore por elas). */
+  let hours = $state(1)
+  let runSeconds = $state(3600)
+  const DT = 30
 
   function load(raw: RawPack | null): void {
     if (!raw) return
@@ -88,9 +92,10 @@
         // Proxy do $state não passa pelo postMessage: vai uma cópia simples.
         ignition: $state.snapshot(ignition),
         wind: { speed: windSpeed, angleDeg: engineAngle(windFrom) },
-        steps: 120,
-        dt: 30
+        steps: (hours * 3600) / DT,
+        dt: DT
       })
+      runSeconds = hours * 3600
       current = 0
       playing = true
     } catch (err) {
@@ -126,6 +131,7 @@
       bind:showFuel
       bind:windSpeed
       bind:windFrom
+      bind:hours
       onrelief={() => (timeline = null)}
       onrun={run}
       onopen={async () => load(await window.api.openLandscape())}
@@ -143,6 +149,7 @@
               {ignition}
               frames={timeline?.frames ?? []}
               {current}
+              duration={runSeconds}
               onignite={ignite}
             />
           {/key}

@@ -154,7 +154,7 @@ Uma pasta autocontida, já no formato que o motor espera (§4):
 - Paisagem (sintética no M1, real no M2) posicionada no mapa
 - Toggle de relevo: plano ou com a altitude real (§5.4)
 - Ignição por clique
-- Vento (velocidade + direção) e duração
+- Vento (velocidade + direção) e duração (1, 2, 4 ou 6 h, passos de 30 s)
 - Rodar → frentes desenhadas no mapa, isócronas coloridas, área queimada
 - Timeline com scrub
 

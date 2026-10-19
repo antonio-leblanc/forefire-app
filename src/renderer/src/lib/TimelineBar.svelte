@@ -8,13 +8,15 @@
   }
   let { timeline, current = $bindable(), playing = $bindable() }: Props = $props()
 
-  // Play: avança um frame a cada 50 ms, para no fim.
+  // Play: um tique a cada 50 ms, para no fim. Run longo pula frames, pra 6 h não
+  // levar meio minuto (1 h = 120 frames = 6 s).
   $effect(() => {
     if (!playing || !timeline) return undefined
     const n = timeline.frames.length
+    const stride = Math.max(1, Math.round(n / 240))
     const id = setInterval(() => {
       if (current >= n - 1) playing = false
-      else current += 1
+      else current = Math.min(n - 1, current + stride)
     }, 50)
     return () => clearInterval(id)
   })
