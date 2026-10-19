@@ -2,6 +2,7 @@
   import * as Plot from '@observablehq/plot'
   import type { Engine } from '../engine/client'
   import { SOLVER } from '../engine/solver'
+  import Inside from './Inside.svelte'
   import {
     FUELS_TABLE,
     GROUPS,
@@ -245,6 +246,8 @@
       on the moisture chart are each fuel's own <code>Md</code> from the table. Simulations on the
       map scale these speeds by {SOLVER.propagationSpeedAdjustmentFactor}.
     </p>
+
+    <Inside {engine} {wind} {slope} {present} />
 
     <h3>
       Fuel table <span class="sub">fuels.csv, one row per Index, as the engine reads it</span>

@@ -1,6 +1,6 @@
 # PLAN — M2: dados reais
 
-**Onde está:** M2 feito, menos o passo 4 (fechar o mapeamento), que depende do Lab. M3 com os passos 1 a 3 feitos; o próximo é o 4: usar o Lab pra fechar as escolhas do `MAPEAMENTO.md`.
+**Onde está:** M2 feito, menos o passo 4 (fechar o mapeamento), que depende do Lab. M3 com os passos 1 a 3 feitos e a etapa 1 da trilha de estudo (o Rothermel por dentro); os próximos são o passo 4 (fechar o `MAPEAMENTO.md` com o Lab) e a etapa 2 da trilha.
 
 Passo a passo dos milestones em curso. As decisões ficam no [`SPEC.md`](./SPEC.md) (§5); aqui fica só a execução. Cada passo termina com algo que dá pra ver rodando.
 
@@ -73,7 +73,7 @@ Começa pelo Model Playground (SPEC §6.2). O primeiro uso dele é fechar as esc
 
 ## 2. Velocidade no worker
 - [x] Mensagem `speeds` no worker: recebe a `fuelsTable` e uma lista de pontos (fuel, declive, vento, `Md`), devolve as velocidades. Um Module só pro Lab, já que não há fogo e o estado global não vaza
-- [ ] Conferir contra o protótipo em Node: Rothermel sem declive, linha 82, vento 5 m/s ≈ 26 m/min
+- [x] Conferir contra o protótipo em Node: Rothermel sem declive, linha 82, vento 5 m/s ≈ 26 m/min (26,1)
 
 ## 3. Model Playground
 - [x] Três curvas: ROS × vento (0–15 m/s), ROS × declive (0–40°), ROS × umidade do morto `Md` (0,02 até a umidade de extinção `me`)
@@ -91,6 +91,19 @@ Começa pelo Model Playground (SPEC §6.2). O primeiro uso dele é fechar as esc
 - [ ] Cada decisão no `MAPEAMENTO.md` com o porquê e o gráfico que a sustenta; se a tabela mudar, versão `worldcover-s2glc-2`
 
 **Pronto quando:** o `MAPEAMENTO.md` não tem mais escolha em aberto, e o passo 4 do M2 fecha.
+
+## 4b. Trilha de estudo do motor
+Quatro etapas pra entender o ForeFire, não só o modelo de ROS: o modelo é uma peça trocável, e o que é do ForeFire está em volta dela (SPEC §6.2). Cada etapa é uma seção do Lab que explica a peça com ela rodando.
+
+1. **O Rothermel por dentro**
+   - [x] Espelho do `Rothermel::getSpeed` em `lab/inside.ts`, mesmas conversões, devolvendo cada termo. Conferido em Node contra o `computeSpeed`: 504 casos (7 combustíveis × vento × declive × umidade, inclusive acima da extinção), diferença máxima de 4·10⁻⁶, que é o arredondamento do texto que o motor imprime
+   - [x] Seção no Lab: um combustível, `Md` num slider, vento e declive da sidebar. A equação `R = R0 × (1 + φw + φs)` com os números, a barra com o peso de cada parcela, e as três parcelas abertas: R0 como fonte de calor (IR, ηM, ξ) sobre sumidouro (ρb, ε, Qig), φw com o vento na altura da chama e o teto de 2013, φs com o declive
+   - [x] A velocidade do espelho conferida na tela contra o `computeSpeed`
+2. **A frente andando:** os nós do perímetro, a normal de cada um, o vento projetado nela e o ROS que o modelo devolve pra aquele nó. Detalhar quando começar
+3. **As camadas:** de onde cada nó tira combustível, altitude e vento, e o mesmo fogo com o mapa trocado por baixo
+4. **O avanço no tempo:** cada nó agenda o próprio próximo passo; o estado global da #175 aparece aqui
+
+**Pronto quando:** dá pra explicar, olhando a tela, por que um nó da frente anda na velocidade que anda.
 
 ## 5. Fuel Studio
 Detalhado quando o Playground estiver de pé: editar as colunas de um combustível e ver a curva mudar junto, com a linha original de referência.

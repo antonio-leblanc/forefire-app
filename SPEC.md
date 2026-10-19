@@ -2,7 +2,7 @@
 
 **Spec-driven development.** Toda decisão arquitetural, trade-off e milestone mora aqui. O código segue o spec, não o contrário. O passo a passo do milestone atual fica em [`PLAN.md`](./PLAN.md).
 
-Status: M1 concluído; M2 com uma pendência (fechar o mapeamento, que sai do Lab); M3 em andamento, com o Model Playground de pé. Última atualização: 2026-10-18.
+Status: M1 concluído; M2 com uma pendência (fechar o mapeamento, que sai do Lab); M3 em andamento, com o Model Playground e o Rothermel por dentro de pé. Última atualização: 2026-10-19.
 
 ---
 
@@ -163,7 +163,10 @@ Depois: múltiplas ignições, pintar combustível, exportar (GeoJSON/GeoTIFF), 
 ### 6.2 Modo Lab
 - **Model Playground:** curvas de ROS (ROS × vento, ROS × declive, ROS × umidade) usando o comando `computeSpeed[...]` do motor
 - **Fuel Studio:** ver e editar as colunas de cada combustível, ver o efeito na curva
+- **Trilha de estudo:** o Lab também explica o motor, em quatro etapas: o Rothermel por dentro (cada termo da fórmula), a frente andando (os nós do perímetro e o ROS de cada um), as camadas (de onde vêm combustível, vento e relevo pra cada nó) e o avanço no tempo (o agendamento por nó). Detalhe em [`PLAN.md`](./PLAN.md)
 - Tudo com dados sintéticos
+
+O Rothermel por dentro é um espelho em TypeScript do `Rothermel::getSpeed` (`lab/inside.ts`), com as mesmas conversões pra unidades inglesas, que devolve cada termo em vez de só a velocidade. O motor não expõe os termos, e o espelho é só pra leitura: a velocidade final é conferida na tela contra o `computeSpeed` do WASM, e o mapa continua rodando o motor.
 
 Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite...), mas cada um pede colunas diferentes na `fuelsTable`. O Lab começa só com Rothermel.
 
@@ -180,8 +183,8 @@ Os modelos estão todos compilados no WASM (Rothermel, variantes Balbi, Farsite.
 
 Cara de software desktop, não de mapa com popup. O mapa ocupa quase tudo; nada de segundo painel lateral, que divide a tela e deixa as duas metades ilegíveis.
 
-- **Header:** logo do ForeFire, paisagem aberta (vira o seletor de paisagem), versão do motor. As abas de modo só aparecem quando existir mais de um modo (o Lab entra no M3).
-- **Sidebar à esquerda**, na ordem do fluxo: Paisagem (dados, toggles de relevo e combustível) → Ignição → Vento (rosa dos ventos em que se arrasta a direção) → Simulação (duração + botão de rodar, a ação principal).
+- **Header:** logo do ForeFire, abas de modo (Simulation · Lab) e versão do motor. A paisagem não fica aqui: só a Simulation depende dela (o Lab usa a tabela de combustível inteira).
+- **Sidebar à esquerda**, na ordem do fluxo: Paisagem (seletor da pasta, dados, toggles de relevo e combustível) → Ignição → Vento (rosa dos ventos em que se arrasta a direção) → Simulação (duração + botão de rodar, a ação principal).
 - **Mapa:** o resto da tela. Os números do run (área queimada, situação, solver) num cartão flutuante em cima dele.
 - **Timeline** no rodapé do mapa: play, scrub, isócronas.
 - **Barra de status:** atribuição dos dados e o aviso de que o combustível é aproximação.
@@ -208,7 +211,7 @@ Cara de software desktop, não de mapa com popup. O mapa ocupa quase tudo; nada 
 
 - **M1 — Motor no app (concluído):** Electron + Svelte + Maplibre, WASM no worker, paisagem sintética (colina + combustíveis do `fuels.csv`), ignição por clique, vento, frentes no mapa, timeline.
 - **M2 — Dados reais:** script Python gera pacote de paisagem (WorldCover + Copernicus DEM) com mapeamento de combustível próprio; app abre o pacote, com toggle de relevo e atribuição. Inclui a casca do app (§7.1, §7.2). Detalhe em [`PLAN.md`](./PLAN.md).
-- **M3 — Lab:** curvas de ROS com `computeSpeed`, Fuel Studio.
+- **M3 — Lab:** curvas de ROS com `computeSpeed`, Fuel Studio, trilha de estudo do motor.
 - **M4 — Cenários:** múltiplas ignições, pintar combustível, salvar/carregar, exportar.
 - **M5 — Distribuição:** instaladores, offline completo (PMTiles), i18n (PT-BR, EN, FR).
 
