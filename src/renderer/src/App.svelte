@@ -108,14 +108,7 @@
 </script>
 
 <div class="app">
-  <Header
-    name={pack?.meta.nome ?? null}
-    side={pack?.meta.lado ?? 0}
-    version={timeline?.version ?? null}
-    {engineReady}
-    bind:mode
-    onopen={async () => load(await window.api.openLandscape())}
-  />
+  <Header version={timeline?.version ?? null} {engineReady} bind:mode />
   {#if mode === 'lab'}
     <Lab {engine} present={Object.keys(pack?.meta.legenda ?? {}).map(Number)} />
   {/if}
@@ -135,6 +128,7 @@
       bind:windFrom
       onrelief={() => (timeline = null)}
       onrun={run}
+      onopen={async () => load(await window.api.openLandscape())}
     />
     <main>
       <div class="map">

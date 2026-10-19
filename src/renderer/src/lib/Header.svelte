@@ -6,17 +6,12 @@
   import logo from '../assets/logo.png'
 
   interface Props {
-    /** Nome da paisagem aberta, ou null. */
-    name: string | null
-    /** Lado do domínio, em metros. */
-    side: number
     /** Versão do motor, conhecida depois do primeiro run. */
     version: string | null
     engineReady: boolean
     mode: Mode
-    onopen: () => void
   }
-  let { name, side, version, engineReady, mode = $bindable(), onopen }: Props = $props()
+  let { version, engineReady, mode = $bindable() }: Props = $props()
 
   const MODES: [Mode, string][] = [
     ['simulation', 'Simulation'],
@@ -38,35 +33,6 @@
     <span>ForeFire</span>
   </div>
   <div class="sep"></div>
-  <button class="landscape" onclick={onopen} title="Open another landscape">
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.6"
-      aria-hidden="true"
-    >
-      <path d="M3 20l6-12 4 7 3-4 5 9z" />
-    </svg>
-    {#if name}
-      {name} · {(side / 1000).toLocaleString('en-US')} km
-    {:else}
-      Open landscape…
-    {/if}
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      aria-hidden="true"
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  </button>
   <div class="sep"></div>
   <nav>
     {#each MODES as [key, label] (key)}
@@ -105,26 +71,6 @@
     width: 1px;
     height: 16px;
     background: var(--border);
-  }
-  .landscape {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    height: 28px;
-    padding: 0 8px;
-    background: none;
-    border: 0;
-    border-radius: var(--radius);
-    font-size: 12px;
-    color: var(--text-2);
-    cursor: pointer;
-    transition:
-      background 0.15s,
-      color 0.15s;
-  }
-  .landscape:hover {
-    background: var(--surface-2);
-    color: var(--text);
   }
   nav {
     display: flex;

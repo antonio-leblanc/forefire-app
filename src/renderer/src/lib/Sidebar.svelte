@@ -17,6 +17,7 @@
     windFrom: number
     onrelief: () => void
     onrun: () => void
+    onopen: () => void
   }
   let {
     meta,
@@ -31,7 +32,8 @@
     windSpeed = $bindable(),
     windFrom = $bindable(),
     onrelief,
-    onrun
+    onrun,
+    onopen
   }: Props = $props()
 
   const COMPASS = [
@@ -93,6 +95,14 @@
 <aside>
   <section>
     <h2>Landscape</h2>
+    <button class="open" onclick={onopen} title="Open another landscape folder">
+      <span
+        >{meta
+          ? `${meta.nome} · ${(meta.lado / 1000).toLocaleString('en-US')} km`
+          : 'Open landscape…'}</span
+      >
+      <span class="note">{meta ? 'change' : ''}</span>
+    </button>
     {#if meta}
       <dl>
         <dt>Grid</dt>
@@ -117,8 +127,6 @@
           <li class="note">transparent: no fuel (barrier)</li>
         </ul>
       {/if}
-    {:else}
-      <p class="note">No landscape open.</p>
     {/if}
   </section>
 
@@ -212,6 +220,25 @@
 </aside>
 
 <style>
+  .open {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 12px;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+  }
+  .open:hover {
+    background: var(--surface-2);
+  }
   aside {
     width: 288px;
     flex-shrink: 0;
