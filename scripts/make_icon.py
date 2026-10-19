@@ -1,4 +1,4 @@
-# Gera os ícones do app (build/ e resources/) a partir do logo do ForeFire num
+# Gera os ícones do app (resources/installer/ e resources/) a partir do logo do ForeFire num
 # quadrado escuro arredondado (SPEC §7.2). Rodar da raiz do repo:
 #   uv run --with pillow python scripts/make_icon.py src/renderer/src/assets/logo.png
 import sys
@@ -16,8 +16,8 @@ h = 640
 w = round(logo.width * h / logo.height)
 logo = logo.resize((w, h), Image.LANCZOS)
 bg.alpha_composite(logo, ((N - w) // 2, (N - h) // 2 + 8))
-bg.save('build/icon.png')
-bg.save('build/icon.ico', sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
-bg.save('build/icon.icns')
+bg.save('resources/installer/icon.png')
+bg.save('resources/installer/icon.ico', sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+bg.save('resources/installer/icon.icns')
 # Ícone da janela em runtime.
 bg.resize((512, 512), Image.LANCZOS).save('resources/icon.png')

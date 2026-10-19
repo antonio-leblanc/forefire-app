@@ -1,10 +1,11 @@
 appId: com.antonioleblanc.forefireapp
 productName: ForeFire App
 directories:
-  buildResources: build
+  buildResources: resources/installer
 files:
   - '!**/.vscode/*'
   - '!src/*'
+  - '!resources/installer/*'
   - '!scripts/*'
   - '!{SPEC.md,PLAN.md}'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
@@ -22,7 +23,7 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  entitlementsInherit: build/entitlements.mac.plist
+  entitlementsInherit: resources/installer/entitlements.mac.plist
   notarize: false
 dmg:
   artifactName: ${name}-${version}.${ext}
